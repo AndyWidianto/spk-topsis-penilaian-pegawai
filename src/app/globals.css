@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -16,10 +20,14 @@ body {
   overflow-x: hidden;
 }
 
+html::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -39,4 +47,23 @@ a {
   html {
     color-scheme: dark;
   }
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.animate-circle {
+  animation: animateCircle 0.5s linear infinite;
+}
+@keyframes animateCircle {
+  from {
+    transform: rotate(0deg);
+  } to {
+    transform: rotate(360deg);
+  }
+}
+
+.no-scroll {
+  overflow: hidden;
 }

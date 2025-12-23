@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+// model users
+model Users {
+  id        Int      @id() @default(autoincrement())
+  email     String 
+  username  String 
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model employee
+enum EmployeeStatus {
+  active
+  inactive
+}
+model Employees {
+  id          Int         @id()  @default(autoincrement())
+  nip         String
+  name        String
+  position    String
+  division    String
+  status      EmployeeStatus
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  assessments Assessments[]
+}
+
+enum CriteriaType {
+  benefit
+  cost
+}
+model Criterias {
+  id                    Int              @id()   @default(autoincrement())
+  code                  String
+  name                  String
+  weight                Int
+  type                  CriteriaType
+  description           String
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  assessemnt_details     AssessmentDetails[]
+}
+
+
+enum StatusPriode {
+  active
+  finished
+}
+model Priodes {
+  id              Int             @id()   @default(autoincrement())
+  month           Int
+  year            Int 
+  status          StatusPriode
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  assessments      Assessments[]
+}
+
+
+model Assessments {
+  id                    Int       @id()  @default(autoincrement())
+  employee_id           Int 
+  priode_id             Int
+  total_value           Int
+  ranking               Int?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  assessemnt_details     AssessmentDetails[]
+  employees             Employees @relation(fields: [employee_id], references: [id])
+  priodes               Priodes   @relation(fields: [priode_id], references: [id])
+  @@unique([employee_id, priode_id])
+}
+
+model AssessmentDetails {
+  id            Int           @id()   @default(autoincrement())
+  assessment_id  Int 
+  criteria_id   Int
+  nilai         Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  assessments   Assessments    @relation(fields: [assessment_id], references: [id])
+  criterias     Criterias     @relation(fields: [criteria_id], references: [id])
+}
