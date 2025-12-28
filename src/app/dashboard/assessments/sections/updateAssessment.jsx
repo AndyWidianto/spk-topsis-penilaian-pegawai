@@ -9,7 +9,7 @@ export default function UpdateAssessment({ data, id, cancel }) {
         employee_id: data.employees.id ?? '',
         total_value: data.total_value ?? 0,
         priode_id: data.priode_id ?? '',
-        ranking: data.ranking ?? 1,
+        ranking: data.ranking ?? null,
     });
     const [employees, setEmployees] = useState([]);
     const [priodes, setPriodes] = useState([]);

@@ -1,109 +1,28 @@
 "use client";
+import { updateSidebar } from "@/lib/features/sidebarSlice";
 import {  CalendarCheck, Layout, LogOut, Star, Users2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-export default function Sidebar({ size, sidebarActive, actionSidebar, refSidebar }) {
-    const [sidebars, setSidebars] = useState([
-        {
-            id: 1,
-            status: false,
-            icon: <Users2 size={20} />,
-            name: "Employees",
-            url: [
-                {
-                    name: "Employees",
-                    url: "/dashboard/employees"
-                },
-                {
-                    name: "Create Users",
-                    url: "/dashboard/employees/create-employee"
-                }
-            ]
-        },
-        {
-            id: 2,
-            status: false,
-            icon: <Users2 size={20} />,
-            name: "Criterias",
-            url: [
-                {
-                    name: "Criterias",
-                    url: "/dashboard/criterias"
-                },
-                {
-                    name: "Create Criteria",
-                    url: "/dashboard/criterias/create-criteria"
-                }
-            ]
-        },
-        {
-            id: 3,
-            status: false,
-            icon: <Users2 size={20} />,
-            name: "Assessments",
-            url: [
-                {
-                    name: "Assessments",
-                    url: "/dashboard/assessments"
-                },
-                {
-                    name: "Create Assement",
-                    url: "/dashboard/assessments/create-assessment"
-                },
-                {
-                    name: "Assessment detail",
-                    url: "/dashboard/assessments/details"
-                },
-                {
-                    name: "Create Detail",
-                    url: "/dashboard/assessments/create-assessment-detail"
-                },
-            ]
-        },
-        {
-            id: 4,
-            status: false,
-            icon: <CalendarCheck size={20} />,
-            name: "Priodes",
-            url: [
-                {
-                    name: "Priodes",
-                    url: "/dashboard/priodes"
-                },
-                {
-                    name: "Create Priode",
-                    url: "/dashboard/priodes/create-priode"
-                },
-            ]
-        },
-    ]);
+export default function Sidebar({ size, sidebarActive, refSidebar }) {
     const pathname = usePathname();
+    const sidebars = useSelector((state) => state.sidebar.sidebars);
+    const dispatch = useDispatch();
 
     const isActive = (path) => {
         return `transition-all ease duration-300 ${path === pathname ? "bg-blue-500 text-white p-3" : "p-2"}`;
     }
     const handleSidebar = (id) => {
-        const newSidebars = sidebars.map(side => {
-            if (side.id === id) {
-                side.status = !side.status;
-            }
-            return { ...side };
-        })
-        setSidebars(newSidebars);
+        dispatch(updateSidebar(id));
     }
 
     const firtsActive = () => {
         const path = pathname.split("/")[2];
         if (path) {
-            const newSidebars = sidebars.map(bar => {
-                if (bar.name.toLowerCase() === path) {
-                    bar.status = true;
-                }
-                return { ...bar };
-            });
-            setSidebars(newSidebars);
+            const sidebar = sidebars.find(bar => bar.name.toLowerCase() === path);
+            dispatch(updateSidebar(sidebar.id));
         }
     }
     useEffect(() => {
@@ -111,18 +30,18 @@ export default function Sidebar({ size, sidebarActive, actionSidebar, refSidebar
     }, [])
 
     return (
-        <div ref={refSidebar} className={`fixed m-1 h-full bg-gray-800 rounded-md overflow-hidden transition-all duration-300 ease text-white z-50 ${ size > 800 ? 'w-[270px]' : sidebarActive ? 'w-[270px]' : 'w-0' }`}>
-            <div className="grid grid-cols-1 pt-2">
-                <div className="flex items-center gap-2 p-2">
+        <div ref={refSidebar} className={`fixed m-1 h-screen bg-gray-800 rounded-md overflow-hidden transition-all duration-300 ease text-white z-50 ${ size > 800 ? 'w-[270px]' : sidebarActive ? 'w-[270px]' : 'w-0' }`}>
+            <div className="grid grid-cols-1 grid-rows-5 h-full pt-2">
+                <div className="relative p-2 row-span-5">
+                <div className="absolute top-0 flex items-center w-full py-2 gap-2 bg-gray-800 border-b border-gray-600">
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQX0pWSh3K9Ib9VoX64vTM_Pbu4GW0SYYoU1g&s" alt="" className="w-[50px] h-[50px] rounded-md bg-white" />
                     <div>
                         <h2 className="p-0 m-0 text-xl">Perusahaan</h2>
                         <p className="text-sm">Lorem ipsum dolor</p>
                     </div>
                 </div>
-                <div className="border border-gray-600 w-full border-b-tranparent border-r-transparent border-l-transparent"></div>
-                <div className="mt-4"></div>
-                <nav className="w-full p-2 h-[420px] overflow-y-scroll scroll-hidden">
+                <div className="w-full h-[70px]"></div>
+                <nav className="row-span-4 w-full h-[85%] border-0 overflow-y-scroll scroll-hidden">
                     <Link href="/dashboard" className={`flex items-center gap-2 w-full rounded-md ${isActive('/dashboard')}`}>
                         <Layout size={20} />
                         dashboard
@@ -154,8 +73,8 @@ export default function Sidebar({ size, sidebarActive, actionSidebar, refSidebar
                         Ranking
                     </Link>
                 </nav>
-                <div className="border border-gray-600"></div>
-                <div className="p-2 w-full">
+                </div>
+                <div className="p-2 w-full border-t border-gray-600">
                     <button className="flex items-center justify-center gap-2 p-3 rounded-md bg-red-500 text-white w-full">
                         <LogOut size={20} />
                         Logout

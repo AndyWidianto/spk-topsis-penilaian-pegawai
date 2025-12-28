@@ -72,7 +72,7 @@ model Priodes {
   status          StatusPriode
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  assessments      Assessments[]
+  assessments     Assessments[]
 }
 
 
@@ -80,7 +80,7 @@ model Assessments {
   id                    Int       @id()  @default(autoincrement())
   employee_id           Int 
   priode_id             Int
-  total_value           Int
+  total_value           Decimal?   @db.Decimal(10, 6)
   ranking               Int?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

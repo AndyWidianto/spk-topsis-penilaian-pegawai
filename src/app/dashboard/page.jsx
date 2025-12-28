@@ -1,60 +1,73 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Target, Award, FileText, Calculator, Settings, Database } from 'lucide-react';
 
 export default function Dashboard() {
   const [selectedAlternative, setSelectedAlternative] = useState(null);
+  const [alternatives, setAlternatives] = useState([]);
+  const [stats, setStats] = useState([]);
 
-  // Sample data
-  const alternatives = [
-    { id: 1, name: 'Alternatif A', nilai: 0.85, ranking: 1 },
-    { id: 2, name: 'Alternatif B', nilai: 0.78, ranking: 2 },
-    { id: 3, name: 'Alternatif C', nilai: 0.72, ranking: 3 },
-    { id: 4, name: 'Alternatif D', nilai: 0.65, ranking: 4 },
-    { id: 5, name: 'Alternatif E', nilai: 0.58, ranking: 5 },
-  ];
 
   const chartData = alternatives.map(alt => ({
-    name: alt.name,
-    nilai: alt.nilai,
+    name: alt?.employees.name,
+    nilai: parseFloat(alt.total_value).toFixed(2),
   }));
 
-  const stats = [
-    {
-      title: 'Total Alternatif',
-      value: '5',
-      change: '+12%',
-      changeType: 'positive',
-      icon: Target,
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600',
-    },
-    {
-      title: 'Kriteria Aktif',
-      value: '8',
-      change: '+3 baru',
-      changeType: 'positive',
-      icon: TrendingUp,
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600',
-    },
-    {
-      title: 'Ranking Tertinggi',
-      value: 'Alt A',
-      change: '0.85 skor',
-      changeType: 'neutral',
-      icon: Award,
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-    },
-  ];
+
+  async function getDashbord() {
+    try {
+      const res = await fetch("/api/dashboard", { method: "GET" });
+      if (res.ok) {
+        const resJson = await res.json();
+        console.log(resJson);
+        const assessments = resJson.assessments.sort((a, b) => a.ranking - b.ranking);
+        const bestRanking = resJson.assessments.find(a => a.ranking === 1);
+        setAlternatives(assessments);
+        setStats([
+          {
+            title: 'Total Employees',
+            value: resJson.total_employees,
+            change: '+12%',
+            changeType: 'positive',
+            icon: Target,
+            iconBg: 'bg-blue-100',
+            iconColor: 'text-blue-600',
+          },
+          {
+            title: 'Kriteria Aktif',
+            value: resJson.total_criterias,
+            change: '+3 baru',
+            changeType: 'positive',
+            icon: TrendingUp,
+            iconBg: 'bg-green-100',
+            iconColor: 'text-green-600',
+          },
+          {
+            title: 'Ranking Tertinggi',
+            value: bestRanking.employees.name,
+            change: Number(bestRanking.total_value).toFixed(2),
+            changeType: 'neutral',
+            icon: Award,
+            iconBg: 'bg-purple-100',
+            iconColor: 'text-purple-600',
+          },
+        ])
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   const quickMenuItems = [
     { icon: Calculator, label: 'Hitung SAW', color: 'bg-blue-600 hover:bg-blue-700' },
     { icon: Database, label: 'Data Master', color: 'bg-emerald-600 hover:bg-emerald-700' },
     { icon: Settings, label: 'Pengaturan', color: 'bg-gray-600 hover:bg-gray-700' },
   ];
+
+  useEffect(() => {
+    getDashbord();
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
@@ -77,11 +90,10 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-gray-600 mb-2">{stat.title}</p>
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</h3>
                   <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                      stat.changeType === 'positive'
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${stat.changeType === 'positive'
                         ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-700'
-                    }`}
+                      }`}
                   >
                     {stat.change}
                   </span>
@@ -122,13 +134,12 @@ export default function Dashboard() {
                     <tr
                       key={alt.id}
                       onClick={() => setSelectedAlternative(alt.id)}
-                      className={`transition-colors cursor-pointer ${
-                        selectedAlternative === alt.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                      }`}
+                      className={`transition-colors cursor-pointer ${selectedAlternative === alt.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="text-sm font-medium text-gray-900">{alt.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{alt.employees.name}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -136,25 +147,24 @@ export default function Dashboard() {
                           <div className="w-16 bg-gray-200 rounded-full h-2 mr-3">
                             <div
                               className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${alt.nilai * 100}%` }}
+                              style={{ width: `${parseFloat(alt.total_value).toFixed(2) * 100}%` }}
                             />
                           </div>
                           <span className="text-sm font-semibold text-gray-900">
-                            {alt.nilai.toFixed(2)}
+                            {parseFloat(alt.total_value).toFixed(2)}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
-                            alt.ranking === 1
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${alt.ranking === 1
                               ? 'bg-yellow-100 text-yellow-700'
                               : alt.ranking === 2
-                              ? 'bg-gray-200 text-gray-700'
-                              : alt.ranking === 3
-                              ? 'bg-orange-100 text-orange-700'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}
+                                ? 'bg-gray-200 text-gray-700'
+                                : alt.ranking === 3
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-gray-100 text-gray-600'
+                            }`}
                         >
                           {alt.ranking}
                         </span>

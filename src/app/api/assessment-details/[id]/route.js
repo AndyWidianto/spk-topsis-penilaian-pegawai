@@ -1,4 +1,4 @@
-import { deleteAsessmentDetail, updateAsessmentDetail } from "@/lib/asessmentDetails";
+import { deleteAsessmentDetail, updateAsessmentDetail } from "@/lib/repository/asessmentDetails";
 
 
 export async function POST(req, { params }) {

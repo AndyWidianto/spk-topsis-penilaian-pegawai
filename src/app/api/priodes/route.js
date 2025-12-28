@@ -1,4 +1,4 @@
-import { createPriode, getPriodes } from "@/lib/priodes";
+import { createPriode, getPriodes } from "@/lib/repository/priodes";
 
 export async function POST(req) {
     const body = await req.json();

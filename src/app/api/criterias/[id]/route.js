@@ -1,4 +1,4 @@
-import { deleteCriteria, getCriteria, updateCriteria } from "@/lib/criteria";
+import { deleteCriteria, getCriteria, updateCriteria } from "@/lib/repository/criteria";
 
 
 export async function POST(req, { params }) {

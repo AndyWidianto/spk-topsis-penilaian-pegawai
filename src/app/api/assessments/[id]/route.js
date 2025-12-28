@@ -1,4 +1,4 @@
-import { deleteAsessment, updateAsessment } from "@/lib/asessments";
+import { deleteAsessment, updateAsessment } from "@/lib/repository/asessments";
 
 export async function POST(req, { params }) {
     const body = await req.json();

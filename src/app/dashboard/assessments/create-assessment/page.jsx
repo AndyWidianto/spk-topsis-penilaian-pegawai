@@ -9,7 +9,7 @@ export default function AssessmentForm() {
     employee_id: '',
     total_value: 0,
     priode_id: '',
-    ranking: 1
+    ranking: null
   });
   const [employees, setEmployees] = useState([]);
   const [priodes, setPriodes] = useState([]);

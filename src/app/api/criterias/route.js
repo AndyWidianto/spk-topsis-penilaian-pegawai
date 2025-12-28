@@ -1,4 +1,4 @@
-import { createCriteria, getCriterias } from "@/lib/criteria";
+import { createCriteria, getCriterias } from "@/lib/repository/criteria";
 
 
 export async function POST(req) {

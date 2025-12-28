@@ -1,4 +1,4 @@
-import { deleteEmployee, GetEmployee, updateEmployee } from "@/lib/employee";
+import { deleteEmployee, GetEmployee, updateEmployee } from "@/lib/repository/employee";
 
 export async function GET(req, { params }) {
     const { id } = await params;

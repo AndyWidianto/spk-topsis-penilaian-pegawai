@@ -1,4 +1,4 @@
-import { deletePriode, getPriode, updatePriode } from "@/lib/priodes";
+import { deletePriode, getPriode, updatePriode } from "@/lib/repository/priodes";
 
 export async function POST(req, { params }) {
     const { id } = await params;

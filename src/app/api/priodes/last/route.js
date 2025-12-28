@@ -1,4 +1,4 @@
-import { getPriodeLast } from "@/lib/priodes";
+import { getPriodeLast } from "@/lib/repository/priodes";
 
 export async function GET() {
     try {

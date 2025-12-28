@@ -1,4 +1,4 @@
-import { CreateEmployee, GetEmployees } from "@/lib/employee";
+import { CreateEmployee, GetEmployees } from "@/lib/repository/employee";
 
 export async function POST(req) {
     const body = await req.json();

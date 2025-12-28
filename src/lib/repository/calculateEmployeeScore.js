@@ -99,5 +99,24 @@ export async function CountingProses({ id }) {
         item.ranking = index + 1;
     });
 
-    return { normalisasi_metrik, nilai_preferensi };
+    const assessments = await prisma.$transaction(
+        nilai_preferensi.map((item) => prisma.assessments.update({
+            where: {
+                id: item.assessment_id
+            },
+            data: {
+                ranking: item.ranking,
+                total_value: item.score
+            }
+        }))
+    )
+    await prisma.priodes.update({
+        where: {
+            id: parseInt(id)
+        },
+        data: {
+            status: "finished"
+        }
+    });
+    return { normalisasi_metrik, nilai_preferensi, assessments };
 }

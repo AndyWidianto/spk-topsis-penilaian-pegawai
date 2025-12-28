@@ -1,4 +1,4 @@
-import { createAsessment, getAsessments } from "@/lib/asessments";
+import { createAsessment, getAsessments } from "@/lib/repository/asessments";
 
 export async function POST(req) {
     const body = await req.json();

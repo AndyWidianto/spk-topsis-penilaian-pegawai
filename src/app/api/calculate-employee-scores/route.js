@@ -1,4 +1,4 @@
-import { CountingProses } from "@/lib/calculateEmployeeScore";
+import { CountingProses } from "@/lib/repository/calculateEmployeeScore";
 
 export async function POST(req) {
     const body = await req.json();

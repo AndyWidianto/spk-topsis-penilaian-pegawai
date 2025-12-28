@@ -4,6 +4,7 @@ import criteriaReducer from "./features/criteriaSlice";
 import assessmentReducer from "./features/assessmentSlice";
 import priodeReducer from "./features/priodeSlice";
 import assessmentDetailReducer from "./features/assessmentDetailSlice";
+import sidebarReducer from "./features/sidebarSlice";
 
 export const store = configureStore({
     reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
         criteria: criteriaReducer,
         assessment: assessmentReducer,
         priode: priodeReducer,
-        assessment_detail: assessmentDetailReducer
+        assessment_detail: assessmentDetailReducer,
+        sidebar: sidebarReducer
     },
 });
 

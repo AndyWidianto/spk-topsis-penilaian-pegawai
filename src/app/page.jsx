@@ -1,7 +1,13 @@
+"use client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 export default function Home() {
+  const navigate = useRouter();
+  useEffect(() => {
+    navigate.push("/dashboard");
+  }, []);
   return (
-    <div className="text-3xl font-bold underline">
-      Hello world!
-    </div>
+    <></>
   );
 }
