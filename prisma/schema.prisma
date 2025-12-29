@@ -22,7 +22,9 @@ model Users {
   username  String 
   password  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt 
+  
+  @@map("users")
 }
 
 // model employee
@@ -41,6 +43,8 @@ model Employees {
   updatedAt   DateTime    @updatedAt
 
   assessments Assessments[]
+
+  @@map("employees")
 }
 
 enum CriteriaType {
@@ -65,6 +69,7 @@ model Criterias {
   updatedAt             DateTime         @updatedAt
 
   assessemnt_details     AssessmentDetails[]
+  @@map("criterias")
 }
 
 
@@ -80,6 +85,8 @@ model Priodes {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   assessments     Assessments[]
+
+  @@map("priodes")
 }
 
 
@@ -96,6 +103,8 @@ model Assessments {
   employees             Employees @relation(fields: [employee_id], references: [id])
   priodes               Priodes   @relation(fields: [priode_id], references: [id])
   @@unique([employee_id, priode_id])
+
+  @@map("assessments")
 }
 
 model AssessmentDetails {
@@ -108,4 +117,6 @@ model AssessmentDetails {
 
   assessments   Assessments    @relation(fields: [assessment_id], references: [id])
   criterias     Criterias     @relation(fields: [criteria_id], references: [id])
+
+  @@map("assessment_details")
 }
