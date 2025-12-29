@@ -32,6 +32,9 @@ CREATE TABLE `Criterias` (
     `weight` INTEGER NOT NULL,
     `type` ENUM('benefit', 'cost') NOT NULL,
     `description` VARCHAR(191) NOT NULL,
+    `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -49,25 +52,25 @@ CREATE TABLE `Priodes` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Asessments` (
+CREATE TABLE `Assessments` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `employee_id` INTEGER NOT NULL,
     `priode_id` INTEGER NOT NULL,
-    `total_value` DECIMAL(65, 30) NOT NULL,
-    `ranking` INTEGER NOT NULL,
+    `total_value` DECIMAL(10, 6) NULL,
+    `ranking` INTEGER NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Asessments_employee_id_priode_id_key`(`employee_id`, `priode_id`),
+    UNIQUE INDEX `Assessments_employee_id_priode_id_key`(`employee_id`, `priode_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `AsessmentDetails` (
+CREATE TABLE `AssessmentDetails` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `asessment_id` INTEGER NOT NULL,
+    `assessment_id` INTEGER NOT NULL,
     `criteria_id` INTEGER NOT NULL,
-    `nilai` DECIMAL(65, 30) NOT NULL,
+    `nilai` INTEGER NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -75,13 +78,13 @@ CREATE TABLE `AsessmentDetails` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `Asessments` ADD CONSTRAINT `Asessments_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employees`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Assessments` ADD CONSTRAINT `Assessments_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employees`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Asessments` ADD CONSTRAINT `Asessments_priode_id_fkey` FOREIGN KEY (`priode_id`) REFERENCES `Priodes`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Assessments` ADD CONSTRAINT `Assessments_priode_id_fkey` FOREIGN KEY (`priode_id`) REFERENCES `Priodes`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `AsessmentDetails` ADD CONSTRAINT `AsessmentDetails_asessment_id_fkey` FOREIGN KEY (`asessment_id`) REFERENCES `Asessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `AssessmentDetails` ADD CONSTRAINT `AssessmentDetails_assessment_id_fkey` FOREIGN KEY (`assessment_id`) REFERENCES `Assessments`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `AsessmentDetails` ADD CONSTRAINT `AsessmentDetails_criteria_id_fkey` FOREIGN KEY (`criteria_id`) REFERENCES `Criterias`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `AssessmentDetails` ADD CONSTRAINT `AssessmentDetails_criteria_id_fkey` FOREIGN KEY (`criteria_id`) REFERENCES `Criterias`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
