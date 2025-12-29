@@ -1,10 +1,10 @@
 import { CountingProses } from "@/lib/repository/calculateEmployeeScore";
 
 export async function POST(req) {
-    const auth = await req.headers.get("authorization");
+    const auth = await req.headers.get("x-vercel-cron");
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
     try {
-        if (auth !== `Bearer ${proses.env.CRON_SECRET}`) {
+        if (!auth) {
             return Response.json({
                 message: "Unauthorization"
             }, { status: 401 });
