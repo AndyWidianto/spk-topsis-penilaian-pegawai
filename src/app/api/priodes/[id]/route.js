@@ -1,25 +1,42 @@
+import { ValidateError } from "@/lib/errors/validateError";
 import { deletePriode, getPriode, updatePriode } from "@/lib/repository/priodes";
 
 export async function POST(req, { params }) {
     const { id } = await params;
     const body = await req.json();
+    const auth = await req.headers.get("authorization");
+    if (!auth) {
+        return Response.json({
+            message: "Unathorization"
+        }, { status: 401 });
+    }
     try {
-        const priode = await updatePriode(id, body);
+        const token = auth.split(" ")[1];
+        const priode = await updatePriode(token, id, body);
         return Response.json(priode);
     } catch (err) {
         console.error(err);
+        return ValidateError(err);
     }
 }
 
 export async function DELETE({ params }) {
     const { id } = await params;
+    const auth = await req.headers.get("authorization");
+    if (!auth) {
+        return Response.json({
+            message: "Unathorization"
+        }, { status: 401 });
+    }
     try {
-        await deletePriode(id);
+        const token = auth.split(" ")[1];
+        await deletePriode(token, id);
         return Response.json({
             message: "Berhasil delete"
         });
     } catch (err) {
         console.error(err);
+        return ValidateError(err);
     }
 }
 
@@ -30,5 +47,6 @@ export async function GET(req, { params }) {
         return Response.json(priodes);
     } catch (err) {
         console.error(err);
+        return ValidateError(err);
     }
 }

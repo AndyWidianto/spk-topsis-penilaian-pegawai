@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { deleteCriteria, setCriterias } from '@/lib/features/criteriaSlice';
 import Loading from '@/app/components/loading';
 import Link from 'next/link';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 export default function CriteriaTable() {
   const [loading, setLoading] = useState(false);
@@ -56,7 +57,7 @@ export default function CriteriaTable() {
   const handleDelete = async (id) => {
     if (!confirm(`Apakah anda yakin ingin menghapus ${id}?`)) return;
     try {
-      const res = await fetch(`/api/criterias/${id}`, { method: "DELETE" });
+      const res = await fetchWithAuth(`/api/criterias/${id}`, { method: "DELETE" });
       if (res.ok) {
         const resJson = await res.json();
         console.log(resJson);

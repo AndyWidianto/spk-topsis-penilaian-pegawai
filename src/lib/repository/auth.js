@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrpyt from "bcrypt";
-import { accessToken, refreshToken, verifyAccessToken } from "./middleware";
+import { accessToken, refreshToken, verifyAccessToken, verifyRefreshToken } from "./middleware";
 
 const prisma = new PrismaClient();
 
@@ -53,7 +53,7 @@ export async function Register({ username, email, password }) {
 }
 
 export async function RefreshToken(refresh) {
-    const verfiyToken = verifyAccessToken(refresh);
+    const verfiyToken = verifyRefreshToken(refresh);
     const access = accessToken(verfiyToken);
     return access;
 }

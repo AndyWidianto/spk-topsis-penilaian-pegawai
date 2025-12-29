@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { updateToken } from '@/lib/fetcher';
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +16,7 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const router = useRouter()
 
   const validatePassword = (password) => {
     if (password.length === 0) return null;
@@ -100,7 +103,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const allTouched = {
       fullName: true,
       email: true,
@@ -130,8 +133,18 @@ export default function RegisterPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Registration attempt:', formData);
-      // Implementasi register logic di sini
+      try {
+        const res = await fetch("/api/auth/register", { method: "POST", body: JSON.stringify(formData), headers: { "Content-Type": "application/json" } });
+        if (!res.ok) {
+          throw new Error("Registration failed");
+        }
+        const resJson = await res.json();
+        console.log("Registration successful:", resJson);
+        updateToken(resJson.accessToken);
+        router.push("/dashboard");
+      } catch (err) {
+        console.error("Registration failed:", err);
+      }
     }
   };
 

@@ -3,7 +3,8 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 
-export async function CreateEmployee(data) {
+export async function CreateEmployee(token, data) {
+    verifyAccessToken(token);
     return prisma.employees.create({
         data: data
     });
@@ -23,7 +24,8 @@ export async function GetEmployee(id) {
     return employee;
 }
 
-export async function updateEmployee(id, { nip, name, position, division, status }) {
+export async function updateEmployee(token, id, { nip, name, position, division, status }) {
+    verifyAccessToken(token);
     const employee = await prisma.employees.update({
         where: {
             id
@@ -39,7 +41,8 @@ export async function updateEmployee(id, { nip, name, position, division, status
     return employee;
 }
 
-export async function deleteEmployee(id) {
+export async function deleteEmployee(token, id) {
+    verifyAccessToken(token);
     return prisma.employees.delete({
         where: {
             id

@@ -14,15 +14,14 @@ export default function Sidebar({ size, sidebarActive, refSidebar }) {
     const isActive = (path) => {
         return `transition-all ease duration-300 ${path === pathname ? "bg-blue-500 text-white p-3" : "p-2"}`;
     }
-    const handleSidebar = (id) => {
-        dispatch(updateSidebar(id));
+    const handleSidebar = (name) => {
+        dispatch(updateSidebar(name));
     }
 
     const firtsActive = () => {
         const path = pathname.split("/")[2];
         if (path) {
-            const sidebar = sidebars.find(bar => bar.name.toLowerCase() === path);
-            dispatch(updateSidebar(sidebar.id));
+            dispatch(updateSidebar(path));
         }
     }
     useEffect(() => {
@@ -48,9 +47,12 @@ export default function Sidebar({ size, sidebarActive, refSidebar }) {
                     </Link>
                     {sidebars.map(bar => (
                         <div className="w-full" key={bar.id}>
-                            <button onClick={() => handleSidebar(bar.id)} className="flex items-center gap-2 p-2 w-full">
+                            <button onClick={() => handleSidebar(bar.name)} className="flex items-center gap-2 p-2 w-full">
                                 <div className="flex w-full items-center gap-2">
-                                    {bar.icon}
+                                    {bar.name.toLowerCase() === "employees" && <Users2 size={20} />}
+                                    {bar.name.toLowerCase() === "assessments" && <Users2 size={20} />}
+                                    {bar.name.toLowerCase() === "criterias" && <Users2 size={20} />}
+                                    {bar.name.toLowerCase() === "priodes" && <CalendarCheck size={20} />}
                                     {bar.name}
                                 </div>
                                 <img src="/arrow_right.svg" alt="" className={`fill-white transition duration-300 ease ${bar.status ? 'rotate-90' : 'rotate-0'}`} />

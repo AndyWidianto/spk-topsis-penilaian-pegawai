@@ -10,7 +10,6 @@ export async function GET() {
                 message: "Anda belum login"
             }, 403);
         }
-        console.log("refreshToken: ", auth.value);
         const accessToken = await RefreshToken(auth.value);
         return Response.json({
             message: "Berhasil refresh Token",

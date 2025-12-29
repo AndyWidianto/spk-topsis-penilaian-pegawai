@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Briefcase, XCircle } from 'lucide-react';
 import { addCriteria } from '@/lib/features/criteriaSlice';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 export default function CreateCriteria() {
   const [formData, setFormData] = useState({
@@ -66,10 +67,9 @@ export default function CreateCriteria() {
   const handleSubmit = async () => {
     if (!validateForm()) return console.error(errors);
     try {
-      const res = await fetch("/api/criterias", { method: "POST", body: JSON.stringify(formData) });
+      const res = await fetchWithAuth("/api/criterias", { method: "POST", body: JSON.stringify(formData) });
       if (res.ok) {
         const resJson = await res.json();
-        console.log(resJson);
         alert('Data karyawan berhasil disimpan!');
         setFormData({
           code: '',

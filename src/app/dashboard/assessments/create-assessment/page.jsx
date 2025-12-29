@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Search, Calendar, User, CheckCircle } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { addAssessment } from '@/lib/features/assessmentSlice';
+import { fetchWithAuth  } from '@/lib/fetcher';
 
 export default function AssessmentForm() {
   const [formData, setFormData] = useState({
@@ -105,7 +106,7 @@ export default function AssessmentForm() {
     console.log(formData);
     if (!validateForm()) return;
     try {
-      const res = await fetch("/api/assessments", { method: "POST", body: JSON.stringify(formData) });
+      const res = await fetchWithAuth("/api/assessments", { method: "POST", body: JSON.stringify(formData), headers: { "Content-Type": "application/json" } });
       if (res.ok) {
         const resJson = await res.json();
         dispatch(addAssessment(resJson));

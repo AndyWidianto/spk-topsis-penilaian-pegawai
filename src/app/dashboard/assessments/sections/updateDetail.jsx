@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Search, User, CheckCircle } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { updateAssessmentDetail } from '@/lib/features/assessmentDetailSlice';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 export default function UpdateAssessmentDetail({ data, id, cancel }) {
     const [formData, setFormData] = useState({
@@ -92,7 +93,7 @@ export default function UpdateAssessmentDetail({ data, id, cancel }) {
         e.preventDefault();
         if (!validateForm()) return;
         try {
-            const res = await fetch(`/api/assessment-details/${id}`, { method: "POST", body: JSON.stringify(formData) });
+            const res = await fetchWithAuth(`/api/assessment-details/${id}`, { method: "POST", body: JSON.stringify(formData) });
             if (res.ok) {
                 const resJson = await res.json();
                 setSubmitted(true);

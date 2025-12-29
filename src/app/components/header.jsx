@@ -16,9 +16,9 @@ export default function Header({ size, sidebarActive, actionSidebar }) {
     }
     function DateNow() {
         const now = new Date();
-        const formated = now.toLocaleDateString("US", {
-            day: "2-digit",
+        const formated = now.toLocaleDateString("en-US", {
             month: "short",
+            day: "2-digit",
             year: "numeric"
         });
         return formated;

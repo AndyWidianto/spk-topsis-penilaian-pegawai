@@ -46,7 +46,13 @@ model Employees {
 enum CriteriaType {
   benefit
   cost
+} 
+
+enum StatusCriteria {
+  active
+  inactive
 }
+
 model Criterias {
   id                    Int              @id()   @default(autoincrement())
   code                  String
@@ -54,6 +60,7 @@ model Criterias {
   weight                Int
   type                  CriteriaType
   description           String
+  status                StatusCriteria   @default(active)
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 

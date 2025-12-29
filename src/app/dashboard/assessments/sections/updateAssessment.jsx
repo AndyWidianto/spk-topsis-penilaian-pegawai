@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Search, Calendar, User, CheckCircle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateAssessmentInPriode } from '@/lib/features/assessmentSlice';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 export default function UpdateAssessment({ data, id, cancel }) {
     const [formData, setFormData] = useState({
@@ -97,7 +98,7 @@ export default function UpdateAssessment({ data, id, cancel }) {
 
         if (!validateForm()) return;
         try {
-            const res = await fetch(`/api/assessments/${id}`, { method: "POST", body: JSON.stringify(formData) });
+            const res = await fetchWithAuth(`/api/assessments/${id}`, { method: "POST", body: JSON.stringify(formData) });
             if (res.ok) {
                 const resJson = await res.json();
                 setSubmitted(true);

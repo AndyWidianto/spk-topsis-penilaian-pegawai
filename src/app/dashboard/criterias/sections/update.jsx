@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Briefcase, XCircle } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { updateCriteria } from '@/lib/features/criteriaSlice';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 export default function UpdateCriteria({ data, id, cancel }) {
     const [formData, setFormData] = useState({
@@ -80,9 +81,8 @@ export default function UpdateCriteria({ data, id, cancel }) {
         if (!validateForm()) return console.error(errors);
         try {
 
-            const res = await fetch(`/api/criterias/${id}`, { method: "POST", body: JSON.stringify(formData) });
+            const res = await fetchWithAuth(`/api/criterias/${id}`, { method: "POST", body: JSON.stringify(formData) });
             const resJson = await res.json();
-            console.log(resJson);
             alert('Data karyawan berhasil disimpan!');
             setFormData({
                 code: '',

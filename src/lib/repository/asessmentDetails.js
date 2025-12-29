@@ -1,8 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { verifyAccessToken } from "./middleware";
 
 const prisma = new PrismaClient();
 
-export async function createAsessmentDetail({ assessment_id, criteria_id, nilai }) {
+export async function createAsessmentDetail(token, { assessment_id, criteria_id, nilai }) {
+    verifyAccessToken(token);
     assessment_id = parseInt(assessment_id);
     criteria_id = parseInt(criteria_id);
     nilai = parseInt(nilai);
@@ -20,7 +22,8 @@ export async function createAsessmentDetail({ assessment_id, criteria_id, nilai 
     return newAsessmentDetail;
 }
 
-export async function updateAsessmentDetail(id, { assessment_id, criteria_id, nilai }) {
+export async function updateAsessmentDetail(token, id, { assessment_id, criteria_id, nilai }) {
+    verifyAccessToken(token);
     assessment_id = parseInt(assessment_id);
     criteria_id = parseInt(criteria_id);
     nilai = parseInt(nilai);
@@ -45,7 +48,8 @@ export async function updateAsessmentDetail(id, { assessment_id, criteria_id, ni
     return assessmentDetail;
 }
 
-export async function deleteAsessmentDetail(id) {
+export async function deleteAsessmentDetail(token, id) {
+    verifyAccessToken(token);
     return prisma.assessmentDetails.delete({
         where: {
             id: parseInt(id)

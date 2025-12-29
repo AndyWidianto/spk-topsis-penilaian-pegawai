@@ -1,12 +1,21 @@
+import { ValidateError } from "@/lib/errors/validateError";
 import { createAsessment, getAsessments } from "@/lib/repository/asessments";
 
 export async function POST(req) {
     const body = await req.json();
+    const auth = await req.headers.get("authorization");
+    if (!auth) {
+        return Response.json({
+            message: "Unauhtorization"
+        }, { status: 401 });
+    }
     try {
-        const assessment = await createAsessment(body);
+        const token = auth.split(" ")[1];
+        const assessment = await createAsessment(token, body);
         return Response.json(assessment);
     } catch (err) {
         console.error(err);
+        return ValidateError(err);
     }
 }
 
@@ -16,5 +25,6 @@ export async function GET(req) {
         return Response.json(assessments);
     } catch (err) {
         console.error(err);
+        return ValidateError(err);
     }
 }

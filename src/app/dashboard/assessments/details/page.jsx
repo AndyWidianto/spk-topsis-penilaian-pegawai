@@ -6,6 +6,7 @@ import UpdateAssessmentDetail from '../sections/updateDetail';
 import { deleteAssessmentDetail, setAssessmentDetails } from '@/lib/features/assessmentDetailSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Link from 'next/link';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 export default function AssessmentDetailTable() {
   const [darkMode, setDarkMode] = useState(false);
@@ -59,7 +60,7 @@ export default function AssessmentDetailTable() {
   async function handleDelete(id) {
     if (!confirm(`Apakah anda yakin ingin menghapus ${id}?`)) return;
     try {
-      const res = await fetch(`/api/assessment-details/${id}`, { method: "DELETE" });
+      const res = await fetchWithAuth(`/api/assessment-details/${id}`, { method: "DELETE" });
       if (res.ok) {
         const resJson = await res.json();
         console.log(resJson);

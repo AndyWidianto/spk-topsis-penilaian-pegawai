@@ -1,12 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {  CalendarCheck, Layout, LogOut, Star, Users2 } from "lucide-react";
 
 const initialState = {
     sidebars: [
             {
                 id: 1,
                 status: false,
-                icon: <Users2 size={20} />,
                 name: "Employees",
                 url: [
                     {
@@ -22,7 +20,6 @@ const initialState = {
             {
                 id: 2,
                 status: false,
-                icon: <Users2 size={20} />,
                 name: "Criterias",
                 url: [
                     {
@@ -38,7 +35,6 @@ const initialState = {
             {
                 id: 3,
                 status: false,
-                icon: <Users2 size={20} />,
                 name: "Assessments",
                 url: [
                     {
@@ -62,7 +58,6 @@ const initialState = {
             {
                 id: 4,
                 status: false,
-                icon: <CalendarCheck size={20} />,
                 name: "Priodes",
                 url: [
                     {
@@ -83,8 +78,8 @@ const sidebarSlice = createSlice({
     initialState,
     reducers: {
         updateSidebar(state, action) {
-            const id = action.payload;
-            const findIndex = state.sidebars.findIndex(side => side.id === id);
+            const name = action.payload;
+            const findIndex = state.sidebars.findIndex(side => side.name.toLowerCase() === name.toLowerCase());
             if (findIndex > -1) {
                 state.sidebars[findIndex].status = !state.sidebars[findIndex].status;
             }

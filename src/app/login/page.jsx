@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { updateToken } from '@/lib/fetcher';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,8 +21,8 @@ export default function LoginPage() {
       }
       const resJson = await res.json();
       console.log("Login successful:", resJson);
-      updateToken(resJson.access);
-      router.push('/dashboard');
+      updateToken(resJson.accessToken);
+      router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -157,9 +158,9 @@ export default function LoginPage() {
         {/* Sign Up Link */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Don't have an account?{' '}
-          <a href="#" className="text-indigo-600 hover:text-indigo-700 font-semibold transition">
+          <Link href="/register" className="text-indigo-600 hover:text-indigo-700 font-semibold transition">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

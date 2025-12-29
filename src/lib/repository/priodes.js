@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function createPriode({ month, year, status }) {
+export async function createPriode(token, { month, year, status }) {
+    verifyAccessToken(token);
     return prisma.priodes.create({
         data: {
             month, 
@@ -16,7 +17,8 @@ export async function getPriodes() {
     return prisma.priodes.findMany();
 }
 
-export async function deletePriode(id) {
+export async function deletePriode(token, id) {
+    verifyAccessToken(token);
     return prisma.priodes.delete({
         where: {
             id
@@ -24,7 +26,8 @@ export async function deletePriode(id) {
     })
 };
 
-export async function updatePriode(id, { month, year, status }) {
+export async function updatePriode(token, id, { month, year, status }) {
+    verifyAccessToken(token);
     return prisma.priodes.update({
         where: {
             id

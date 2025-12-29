@@ -81,7 +81,7 @@ export default function AssessmentTable() {
   const handleDelete = async (id) => {
     if (!confirm(`Apakah anda yakin ingin menghapus ${id}?`)) return;
     try {
-      const res = await fetch(`/api/assessments/${id}`, { method: "DELETE" });
+      const res = await fetchWithAuth(`/api/assessments/${id}`, { method: "DELETE" })
       if (res.ok) {
         const resJson = await res.json();
         alert(resJson.message);
