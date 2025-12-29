@@ -1,10 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-export async function CountingProses({ id }) {
+export async function CountingProses(month, year) {
     const data = await prisma.priodes.findFirst({
         where: {
-            id: parseInt(id)
+            month,
+            year
         },
         include: {
             assessments: {
@@ -112,11 +113,18 @@ export async function CountingProses({ id }) {
     )
     await prisma.priodes.update({
         where: {
-            id: parseInt(id)
+            id: data.id
         },
         data: {
             status: "finished"
         }
+    });
+    if (month > 12) {
+        month = 1;
+        year = year + 1;
+    }
+    await prisma.priodes.create({
+        data: { month, year }
     });
     return { normalisasi_metrik, nilai_preferensi, assessments };
 }

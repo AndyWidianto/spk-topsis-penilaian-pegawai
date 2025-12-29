@@ -1,9 +1,18 @@
 import { CountingProses } from "@/lib/repository/calculateEmployeeScore";
 
 export async function POST(req) {
-    const body = await req.json();
+    const auth = await req.headers.get("authorization");
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
     try {
-        const res = await CountingProses(body);
+        if (auth !== `Bearer ${proses.env.CRON_SECRET}`) {
+            return Response.json({
+                message: "Unauthorization"
+            }, { status: 401 });
+        }
+        if (now.getDate() !== 1) {
+            return Response.json({ message: "Belum waktunya berubah" }, { status: 200 });
+        }
+        const res = await CountingProses(now.getMonth(), now.getFullYear());
         return Response.json({
             message: "Proses Selesai",
             data: res
