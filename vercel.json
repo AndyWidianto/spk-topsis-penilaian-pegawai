@@ -2,7 +2,7 @@
     "crons": [
         {
             "path": "/api/calculate-employee-scores",
-            "schedule": "*/2 * * * *"
+            "schedule": "0 0 * * *"
         }
     ]
 }
