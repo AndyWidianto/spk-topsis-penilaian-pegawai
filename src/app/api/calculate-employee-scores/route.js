@@ -21,3 +21,10 @@ export async function POST(req) {
         console.error(err);
     }
 }
+
+export async function GET() {
+    console.log("CRON CLEANUP RUN:", new Date().toISOString());
+    return Response.json({
+        message: "Cron Berjalan nih"
+    })
+}
