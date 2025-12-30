@@ -11,9 +11,11 @@ export default function LoginPage() {
     email: '',
     password: ''
   });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async () => {
+    setLoading(true);
     try {
       const res = await fetch("/api/auth/login", { method: "POST", body: JSON.stringify(formData) });
       if (!res.ok) {
@@ -25,12 +27,13 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
+    }  finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
     console.log('Google login clicked');
-    // Implementasi Google OAuth di sini
   };
 
   const handleKeyPress = (e) => {
@@ -115,7 +118,7 @@ export default function LoginPage() {
             onClick={handleSubmit}
             className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
-            Sign In
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </div>
 

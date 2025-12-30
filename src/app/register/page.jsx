@@ -8,7 +8,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -16,6 +16,7 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [loading, setLoading] = useState(false);
   const router = useRouter()
 
   const validatePassword = (password) => {
@@ -105,7 +106,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async () => {
     const allTouched = {
-      fullName: true,
+      username: true,
       email: true,
       password: true,
       confirmPassword: true
@@ -114,7 +115,7 @@ export default function RegisterPage() {
 
     const newErrors = {};
     
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!formData.username.trim()) newErrors.username = 'Full name is required';
     
     const emailError = validateEmail(formData.email);
     if (!formData.email) newErrors.email = 'Email is required';
@@ -133,6 +134,7 @@ export default function RegisterPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
+      setLoading(true);
       try {
         const res = await fetch("/api/auth/register", { method: "POST", body: JSON.stringify(formData), headers: { "Content-Type": "application/json" } });
         if (!res.ok) {
@@ -144,6 +146,8 @@ export default function RegisterPage() {
         router.push("/dashboard");
       } catch (err) {
         console.error("Registration failed:", err);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -182,7 +186,7 @@ export default function RegisterPage() {
         <div className="space-y-4">
           {/* Full Name Input */}
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
               Full Name
             </label>
             <div className="relative">
@@ -191,21 +195,21 @@ export default function RegisterPage() {
               </div>
               <input
                 type="text"
-                id="fullName"
-                value={formData.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                onBlur={() => handleBlur('fullName')}
+                id="username"
+                value={formData.username}
+                onChange={(e) => handleChange('username', e.target.value)}
+                onBlur={() => handleBlur('username')}
                 onKeyPress={handleKeyPress}
                 className={`block w-full pl-10 pr-3 py-3 border ${
-                  errors.fullName && touched.fullName ? 'border-red-500' : 'border-gray-300'
+                  errors.username && touched.username ? 'border-red-500' : 'border-gray-300'
                 } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 outline-none`}
                 placeholder="John Doe"
               />
             </div>
-            {errors.fullName && touched.fullName && (
+            {errors.username && touched.username && (
               <p className="mt-1 text-sm text-red-500 flex items-center">
                 <XCircle className="h-4 w-4 mr-1" />
-                {errors.fullName}
+                {errors.username}
               </p>
             )}
           </div>
@@ -361,7 +365,7 @@ export default function RegisterPage() {
             onClick={handleSubmit}
             className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </div>
 
