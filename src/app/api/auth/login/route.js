@@ -1,3 +1,4 @@
+import { ValidateError } from "@/lib/errors/validateError";
 import { Login } from "@/lib/repository/auth";
 import { cookies } from "next/headers";
 
@@ -19,5 +20,6 @@ export async function POST(req) {
         });
     } catch (err) {
         console.error(err);
+        return ValidateError(err);
     }
 }
