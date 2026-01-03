@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { verifyAccessToken } from "./middleware";
+import { verifyAccessToken } from "./token.service";
 import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();

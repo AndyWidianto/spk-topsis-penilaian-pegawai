@@ -1,10 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { verifyAccessToken } from "./token.service";
+import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();
 
 
 export async function CreateEmployee(token, data) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     return prisma.employees.create({
         data: data
     });
@@ -25,7 +30,10 @@ export async function GetEmployee(id) {
 }
 
 export async function updateEmployee(token, id, { nip, name, position, division, status }) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     const employee = await prisma.employees.update({
         where: {
             id
@@ -42,7 +50,10 @@ export async function updateEmployee(token, id, { nip, name, position, division,
 }
 
 export async function deleteEmployee(token, id) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     return prisma.employees.delete({
         where: {
             id

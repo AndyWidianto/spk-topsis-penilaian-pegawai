@@ -6,19 +6,19 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export default function Sidebar({ size, sidebarActive, refSidebar }) {
+export default function Sidebar({ sidebarActive, refSidebar, handleLogout }) {
     const pathname = usePathname();
     const sidebars = useSelector((state) => state.sidebar.sidebars);
     const dispatch = useDispatch();
 
-    const isActive = (path) => {
+    function isActive(path) {
         return `transition-all ease duration-300 ${path === pathname ? "bg-blue-500 text-white p-3" : "p-2"}`;
     }
-    const handleSidebar = (name) => {
+    function handleSidebar(name) {
         dispatch(updateSidebar(name));
     }
 
-    const firtsActive = () => {
+    function firtsActive() {
         const path = pathname.split("/")[2];
         if (path) {
             dispatch(updateSidebar(path));
@@ -29,7 +29,7 @@ export default function Sidebar({ size, sidebarActive, refSidebar }) {
     }, [])
 
     return (
-        <div ref={refSidebar} className={`fixed m-1 h-screen bg-gray-800 rounded-md overflow-hidden transition-all duration-300 ease text-white z-50 ${ size > 800 ? 'w-[270px]' : sidebarActive ? 'w-[270px]' : 'w-0' }`}>
+        <div ref={refSidebar} className={`fixed m-1 h-screen bg-gray-900 rounded-md overflow-hidden transition-all duration-300 ease text-white z-50 ${ sidebarActive ? 'w-[270px]' : 'w-0' }`}>
             <div className="grid grid-cols-1 grid-rows-5 h-full pt-2">
                 <div className="relative p-2 row-span-5">
                 <div className="absolute top-0 flex items-center w-full py-2 gap-2 bg-gray-800 border-b border-gray-600">
@@ -70,14 +70,14 @@ export default function Sidebar({ size, sidebarActive, refSidebar }) {
                             </div>
                         </div>
                     ))}
-                    <Link href="/ranking" className={`flex items-center gap-2 p-2 rounded-full w-full text-start ${isActive('/ranking')}`}>
+                    <Link href="/dashboard/topsis-calculate" className={`flex items-center gap-2 p-2 rounded-full w-full text-start ${isActive('/ranking')}`}>
                         <Star size={20} />
-                        Ranking
+                        Topsis Calculate
                     </Link>
                 </nav>
                 </div>
                 <div className="p-2 w-full border-t border-gray-600">
-                    <button className="flex items-center justify-center gap-2 p-3 rounded-md bg-red-500 text-white w-full">
+                    <button onClick={() => handleLogout()} className="flex items-center justify-center gap-2 p-3 rounded-md bg-red-500 text-white w-full">
                         <LogOut size={20} />
                         Logout
                     </button>

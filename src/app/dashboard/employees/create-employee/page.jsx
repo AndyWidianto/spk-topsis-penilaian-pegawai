@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { User, Briefcase, Building2, CheckCircle2, XCircle } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { addEmployee } from '@/lib/features/employeeSlice';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 const EmployeeForm = () => {
   const [formData, setFormData] = useState({
@@ -73,17 +74,19 @@ const EmployeeForm = () => {
   const handleSubmit = async () => {
     if (validateForm()) {
       try {
-        const res = await fetch("/api/employees", { method: "POST", body: JSON.stringify(formData) });
-        const resJson = await res.json();
-        dispatch(addEmployee(resJson));
-        alert('Data karyawan berhasil disimpan!');
-        setFormData({
-          nip: '',
-          name: '',
-          position: '',
-          division: '',
-          status: 'active',
-        });
+        const res = await fetchWithAuth("/api/employees", { method: "POST", body: JSON.stringify(formData) });
+        if (res.ok) {
+          const resJson = await res.json();
+          dispatch(addEmployee(resJson));
+          alert('Data karyawan berhasil disimpan!');
+          setFormData({
+            nip: '',
+            name: '',
+            position: '',
+            division: '',
+            status: 'active',
+          });
+        }
       } catch (err) {
         console.error(err);
       }

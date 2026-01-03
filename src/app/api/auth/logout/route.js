@@ -1,15 +1,12 @@
 import { ValidateError } from "@/lib/errors/validateError";
-import { RefreshToken } from "@/lib/repository/auth";
 import { cookies } from "next/headers";
 
-export async function GET() {
+export async function POST(req) {
     try {
         const Cookies = await cookies();
-        const auth = Cookies.get("refreshToken");
-        const accessToken = await RefreshToken(auth?.value);
+        Cookies.delete("refreshToken");
         return Response.json({
-            message: "Berhasil refresh Token",
-            accessToken: accessToken
+            message: "Berhasil Logout",
         });
     } catch (err) {
         console.error(err);

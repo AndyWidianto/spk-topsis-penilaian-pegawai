@@ -1,9 +1,13 @@
 import { PrismaClient } from "@prisma/client";
+import { verifyAccessToken } from "./token.service";
 
 const prisma = new PrismaClient();
 
 export async function createPriode(token, { month, year, status }) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     return prisma.priodes.create({
         data: {
             month, 
@@ -18,7 +22,10 @@ export async function getPriodes() {
 }
 
 export async function deletePriode(token, id) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     return prisma.priodes.delete({
         where: {
             id
@@ -27,7 +34,10 @@ export async function deletePriode(token, id) {
 };
 
 export async function updatePriode(token, id, { month, year, status }) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     return prisma.priodes.update({
         where: {
             id
@@ -48,7 +58,8 @@ export async function getPriode(id) {
         include: {
             assessments: {
                 include: {
-                    employees: true
+                    employees: true,
+                    assessment_details: true
                 }
             }
         }
@@ -64,6 +75,7 @@ export async function getPriodeLast() {
             assessments: {
                 include: {
                     employees: true,
+                    assessment_details: true
                 }
             }
         }

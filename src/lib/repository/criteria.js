@@ -1,15 +1,18 @@
 import { PrismaClient } from "@prisma/client";
-import { verifyAccessToken } from "./middleware";
+import { verifyAccessToken } from "./token.service";
 import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();
 export async function createCriteria(token, { name, weight, type, description, code }) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     if (!code) {
-        throw new Error("Code tidak boleh kosong");
+        throw new AppError("Code tidak boleh kosong", 404);
     }
     if (!name) {
-        throw new Error("name tidak boleh kosong");
+        throw new AppError("name tidak boleh kosong", 404);
     } 
     const totalWeight = await prisma.criterias.aggregate({
         where: {
@@ -34,12 +37,15 @@ export async function getCriterias() {
 }
 
 export async function updateCriteria(token, id, { name, code, weight, type, description }) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     if (!code) {
-        throw new Error("Code tidak boleh kosong");
+        throw new AppError("Code tidak boleh kosong", 404);
     }
     if (!name) {
-        throw new Error("name tidak boleh kosong");
+        throw new AppError("name tidak boleh kosong", 404);
     } 
     const totalWeight = await prisma.criterias.aggregate({
         where: {
@@ -64,7 +70,10 @@ export async function updateCriteria(token, id, { name, code, weight, type, desc
 }
 
 export async function deleteCriteria(token, id) {
-    verifyAccessToken(token);
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
     return prisma.criterias.delete({
         where: {
             id

@@ -1,5 +1,6 @@
 "use client";
 import { addAssessmentInPriode } from '@/lib/features/assessmentSlice';
+import { fetchWithAuth } from '@/lib/fetcher';
 import { Calendar } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -100,7 +101,7 @@ const ModernPeriodForm = () => {
 
         if (newErrors.month && newErrors.year && newErrors.status) return;
         try {
-            const res = await fetch("/api/priodes", { method: "POST", body: JSON.stringify(formData) });
+            const res = await fetchWithAuth("/api/priodes", { method: "POST", body: JSON.stringify(formData) });
             const resJson = await res.json();
             alert('Form saved successfully!');
             setFormData({ month: '', year: '', status: 'active' });

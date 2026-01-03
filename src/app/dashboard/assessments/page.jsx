@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { deleteAssessmentInPriode, setPriode } from '@/lib/features/assessmentSlice';
 import Loading from '@/app/components/loading';
 import { setPriodes } from '@/lib/features/priodeSlice';
+import { setCriterias } from '@/lib/features/criteriaSlice';
+import Link from 'next/link';
 
 export default function AssessmentTable() {
   const [assessment, setAssessment] = useState({});
@@ -19,6 +21,7 @@ export default function AssessmentTable() {
 
   const priode = useSelector((state) => state.assessment.priode);
   const priodes = useSelector((state) => state.priode.priodes);
+  const criterias = useSelector((state) => state.criteria.criterias);
   const dispatch = useDispatch();
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
@@ -106,9 +109,23 @@ export default function AssessmentTable() {
     getPriodeId(priode.id);
     setIsDropdownOpen(false);
   }
+  const getCriterias = async () => {
+    if (criterias.length > 0) return;
+    try {
+      const res = await fetch("/api/criterias", { method: "GET" });
+      if (res.ok) {
+        const resJson = await res.json();
+        console.log(resJson);
+        dispatch(setCriterias(resJson));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
   useEffect(() => {
     getPriode();
     getPriodes();
+    getCriterias();
   }, []);
   useEffect(() => {
     document.documentElement.classList.toggle("no-scroll", isDropdownOpen);
@@ -164,8 +181,8 @@ export default function AssessmentTable() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>User Management</h1>
-              <p className={textSecondary}>Manage your team members and their roles</p>
+              <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>Assessment Management</h1>
+              <p className={textSecondary}>Manage assessments</p>
             </div>
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -193,11 +210,11 @@ export default function AssessmentTable() {
               {/* Role Filter */}
               <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className='p-3 rounded-xl text-gray-600 px-4'>{priode ? `${months.find(m => m.value === priode.month)?.label}-${priode.year}` : 'Select Priode'}</button>
 
-              {/* Add User Button */}
-              <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
+              {/* Add Assessment Button */}
+              <Link href="/dashboard/create-assessment" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
                 <Plus size={20} />
-                Add New User
-              </button>
+                Add New Assessment
+              </Link>
             </div>
           </div>
 
@@ -209,8 +226,9 @@ export default function AssessmentTable() {
                   <tr className={`border-b ${borderColor}`}>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>No.</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Employee</th>
-                    <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Total Value</th>
-                    <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Priode</th>
+                    {criterias.map(criteria => (
+                      <th key={criteria.id} className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>{criteria.name}({criteria.weight})</th>
+                    ))}
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Status</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Date Created</th>
                     <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>
@@ -225,12 +243,11 @@ export default function AssessmentTable() {
                       <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
                         {assessment.employees.name}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
-                        {assessment.total_value}
+                      {assessment.assessment_details.map(detail => (
+                        <td key={detail.id} className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
+                          {detail.nilai}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
-                        {`${months.find(m => m.value === priode?.month)?.label}-${priode?.year}`}
-                      </td>
+                      ))}
                       <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
                         <div className="flex items-center justify-center gap-1 text-sm rounded-full bg-green-200">
                           <span className="h-1 5 w-1 5 rounded-full bg-green-600"></span>

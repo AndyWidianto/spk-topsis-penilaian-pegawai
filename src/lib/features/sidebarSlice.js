@@ -45,14 +45,14 @@ const initialState = {
                         name: "Create Assement",
                         url: "/dashboard/assessments/create-assessment"
                     },
-                    {
-                        name: "Assessment detail",
-                        url: "/dashboard/assessments/details"
-                    },
-                    {
-                        name: "Create Detail",
-                        url: "/dashboard/assessments/create-assessment-detail"
-                    },
+                    // {
+                    //     name: "Assessment detail",
+                    //     url: "/dashboard/assessments/details"
+                    // },
+                    // {
+                    //     name: "Create Detail",
+                    //     url: "/dashboard/assessments/create-assessment-detail"
+                    // },
                 ]
             },
             {

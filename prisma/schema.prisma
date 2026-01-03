@@ -16,13 +16,23 @@ generator client {
 
 
 // model users
+enum RoleUser {
+  super_admin
+  admin
+  user
+}
 model Users {
-  id        Int      @id() @default(autoincrement())
-  email     String 
-  username  String 
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
+  id                Int      @id() @default(autoincrement())
+  email             String 
+  username          String 
+  password          String
+  avatar            String?
+  refresh_token     String?  @db.Text
+  role              RoleUser @default(user)
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt 
+  notifications     Notifications[]
   
   @@map("users")
 }
@@ -68,7 +78,7 @@ model Criterias {
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
 
-  assessemnt_details     AssessmentDetails[]
+  assessment_details     AssessmentDetails[]
   @@map("criterias")
 }
 
@@ -99,7 +109,7 @@ model Assessments {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  assessemnt_details     AssessmentDetails[]
+  assessment_details    AssessmentDetails[]
   employees             Employees @relation(fields: [employee_id], references: [id])
   priodes               Priodes   @relation(fields: [priode_id], references: [id])
   @@unique([employee_id, priode_id])
@@ -119,4 +129,17 @@ model AssessmentDetails {
   criterias     Criterias     @relation(fields: [criteria_id], references: [id])
 
   @@map("assessment_details")
+}
+
+model Notifications {
+  id          Int      @id()  @default(autoincrement())
+  user_id     Int 
+  message     String
+  read        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  users       Users    @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
 }

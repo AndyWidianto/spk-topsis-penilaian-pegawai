@@ -1,13 +1,15 @@
 import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError";
+import { PrismaClient } from "@prisma/client";
 
-export function accessToken({ id, email, username }) {
-    const payload = { id, email, username };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '17m' });
+const prisma = new PrismaClient();
+export function accessToken({ id, email, username, role }) {
+    const payload = { id, email, username, role };
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 }
 
-export function refreshToken({ id, email, username }) {
-    const payload = { id, email, username };
+export function refreshToken({ id, email, username, role }) {
+    const payload = { id, email, username, role };
     const refresh = jwt.sign(payload, process.env.REFRESH_JWT_SECRET, { expiresIn: '30d' });
     return refresh;
 }
@@ -35,4 +37,15 @@ export function verifyRefreshToken(token) {
         }
         throw new AppError("Invalid access token", 403);
     }
+}
+
+
+export async function JwtVerify(token) {
+  const decode = jwt.verify(token, process.env.REFRESH_JWT_SECRET);
+  const user = await prisma.users.findUnique({ where: { id: decode.id }});
+  console.log(user);
+  if (user.refresh_token !== token) {
+    throw new AppError("Refresh Token tidak cocok", 403);
+  }
+  return true;
 }

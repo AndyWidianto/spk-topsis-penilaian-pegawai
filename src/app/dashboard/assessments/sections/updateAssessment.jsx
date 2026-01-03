@@ -4,6 +4,7 @@ import { Search, Calendar, User, CheckCircle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateAssessmentInPriode } from '@/lib/features/assessmentSlice';
 import { fetchWithAuth } from '@/lib/fetcher';
+import { setCriterias } from '@/lib/features/criteriaSlice';
 
 export default function UpdateAssessment({ data, id, cancel }) {
     const [formData, setFormData] = useState({
@@ -11,6 +12,10 @@ export default function UpdateAssessment({ data, id, cancel }) {
         total_value: data.total_value ?? 0,
         priode_id: data.priode_id ?? '',
         ranking: data.ranking ?? null,
+        assessment_details: data.assessment_details.map(detail => ({
+            id: detail.criteria_id,
+            value: detail.nilai
+        })) ?? []
     });
     const [employees, setEmployees] = useState([]);
     const [priodes, setPriodes] = useState([]);
@@ -19,12 +24,15 @@ export default function UpdateAssessment({ data, id, cancel }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isDropdownOpenPriode, setIsDropdownOpenPriode] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const refPriode = useRef(null);
     const filteredEmployees = employees.filter(emp =>
         emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.nip.includes(searchQuery)
     );
     const dispatch = useDispatch();
+    const criterias = useSelector((state) => state.criteria.criterias);
     const months = [
         {
             value: 1,
@@ -97,6 +105,7 @@ export default function UpdateAssessment({ data, id, cancel }) {
         e.preventDefault();
 
         if (!validateForm()) return;
+        setLoading(true);
         try {
             const res = await fetchWithAuth(`/api/assessments/${id}`, { method: "POST", body: JSON.stringify(formData) });
             if (res.ok) {
@@ -109,6 +118,7 @@ export default function UpdateAssessment({ data, id, cancel }) {
             console.error(err);
         } finally {
             setTimeout(() => setSubmitted(false), 3000);
+            setLoading(false);
         }
     };
 
@@ -149,6 +159,32 @@ export default function UpdateAssessment({ data, id, cancel }) {
             setIsDropdownOpenPriode(false);
         }
     }
+    const getCriterias = async () => {
+        if (criterias.length > 0) return;
+        try {
+            const res = await fetch("/api/criterias", { method: "GET" });
+            if (res.ok) {
+                const resJson = await res.json();
+                console.log(resJson);
+                dispatch(setCriterias(resJson));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+    const handleChangeCriteria = (e) => {
+        const { name, value } = e.target;
+        const findIndex = formData.assessment_details.findIndex(detail => detail.id === parseInt(name));
+        if (findIndex !== -1) {
+            const updatedDetails = [...formData.assessment_details];
+            updatedDetails[findIndex] = { ...updatedDetails[findIndex], value: value };
+            return setFormData(prev => ({ ...prev, assessment_details: updatedDetails }));
+        }
+        setFormData(prev => ({
+            ...prev,
+            assessment_details: [...prev.assessment_details, { id: parseInt(name), value: value }]
+        }));
+    }
 
     const handleClose = () => {
         cancel();
@@ -157,6 +193,8 @@ export default function UpdateAssessment({ data, id, cancel }) {
     useEffect(() => {
         getEmployees();
         getPriodes();
+        getCriterias();
+        console.log("FormData update: ", formData);
         document.addEventListener("mousedown", handleClick);
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
@@ -269,26 +307,36 @@ export default function UpdateAssessment({ data, id, cancel }) {
                             )}
                         </div>
 
-                        {/* Total Value */}
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                Total Nilai
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    value={formData.total_value}
-                                    readOnly
-                                    className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-lg text-slate-800 font-semibold text-lg cursor-not-allowed"
-                                />
-                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm font-medium">
-                                    / 100
+                        {/* criteria */}
+                        {criterias.length > 0 && criterias.map(criteria => (
+                            <div key={criteria.id}>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                    {criteria.name} <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder={`Masukkan nilai untuk ${criteria.name}`}
+                                        pattern="\d*"
+                                        value={formData.assessment_details.find(detail => detail.id === criteria.id)?.value || ''}
+                                        onChange={handleChangeCriteria}
+                                        name={criteria.id}
+                                        className={`w-full px-4 py-3 bg-white border-2 rounded-lg text-left flex items-center justify-between transition-all ${errors.nilai
+                                            ? 'border-red-300 focus:border-red-500'
+                                            : 'border-slate-200 hover:border-slate-300 focus:border-blue-500'
+                                            } focus:outline-none focus:ring-4 focus:ring-blue-500/10`}
+                                    />
+                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm font-medium">
+                                        / 100
+                                    </div>
                                 </div>
+                                {errors.nilai && (
+                                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                                        <span className="font-medium">⚠</span> {errors.nilai}
+                                    </p>
+                                )}
                             </div>
-                            <p className="mt-2 text-sm text-slate-500">
-                                Nilai total dihitung otomatis dari sistem
-                            </p>
-                        </div>
+                        ))}
 
                         {/* Periode */}
                         <div>
@@ -332,7 +380,10 @@ export default function UpdateAssessment({ data, id, cancel }) {
                             type="submit"
                             className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/50 active:scale-95"
                         >
-                            Simpan Penilaian
+                            {loading ? <div className="flex items-center justify-center gap-2">
+                                <div className="animate-spin border-2 border-white border-t-2 border-t-blue-500 h-5 w-5 rounded-full mx-auto"></div>
+                                Processing
+                            </div> : 'Simpan Penilaian'}
                         </button>
                     </div>
                     {/* Info Footer */}
