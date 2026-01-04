@@ -81,3 +81,26 @@ export async function getPriodeLast() {
         }
     });
 }
+
+export async function getPriodeLastFinished() {
+    return prisma.priodes.findFirst({
+        where: {
+            status: "finished"
+        },
+        orderBy: [
+            { year: "desc" },
+            { month: "desc" }
+        ],
+        include: {
+            assessments: {
+                where: {
+                    NOT: { ranking: null }
+                },
+                orderBy: { ranking: "asc" },
+                include: {
+                    employees: true
+                }
+            }
+        }
+    })
+}

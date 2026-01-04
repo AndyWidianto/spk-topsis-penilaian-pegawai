@@ -21,13 +21,12 @@ export default function Dashboard() {
       if (res.ok) {
         const resJson = await res.json();
         console.log(resJson);
-        const assessments = resJson.assessments.sort((a, b) => a.ranking - b.ranking);
-        const bestRanking = resJson.assessments.find(a => a.ranking === 1);
-        setAlternatives(assessments);
+        const bestRanking = resJson.assessments?.find(a => a.ranking === 1);
+        setAlternatives(resJson.assessments ?? []);
         setStats([
           {
             title: 'Total Employees',
-            value: resJson.total_employees,
+            value: resJson.total_employees ?? '',
             change: '+12%',
             changeType: 'positive',
             icon: Target,
@@ -36,7 +35,7 @@ export default function Dashboard() {
           },
           {
             title: 'Kriteria Aktif',
-            value: resJson.total_criterias,
+            value: resJson.total_criterias ?? '',
             change: '+3 baru',
             changeType: 'positive',
             icon: TrendingUp,
@@ -45,8 +44,8 @@ export default function Dashboard() {
           },
           {
             title: 'Ranking Tertinggi',
-            value: bestRanking.employees.name,
-            change: Number(bestRanking.total_value).toFixed(2),
+            value: bestRanking?.employees.name ?? '',
+            change: Number(bestRanking?.total_value).toFixed(2) ?? '',
             changeType: 'neutral',
             icon: Award,
             iconBg: 'bg-purple-100',
@@ -60,7 +59,7 @@ export default function Dashboard() {
   }
 
   const quickMenuItems = [
-    { icon: Calculator, label: 'Hitung SAW', color: 'bg-blue-600 hover:bg-blue-700' },
+    { icon: Calculator, label: 'Hitung TOPSIS', color: 'bg-blue-600 hover:bg-blue-700' },
     { icon: Database, label: 'Data Master', color: 'bg-emerald-600 hover:bg-emerald-700' },
     { icon: Settings, label: 'Pengaturan', color: 'bg-gray-600 hover:bg-gray-700' },
   ];
@@ -75,7 +74,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Decision Support System</h1>
-          <p className="text-gray-600">Dashboard Metode SAW (Simple Additive Weighting)</p>
+          <p className="text-gray-600">Dashboard Metode TOPSIS (Technique for Order Preference by Similarity to Ideal Solution)</p>
         </div>
 
         {/* Stats Cards */}
@@ -111,7 +110,7 @@ export default function Dashboard() {
           {/* Table Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Hasil Perhitungan SAW</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Hasil Perhitungan TOPSIS</h2>
               <p className="text-sm text-gray-600 mt-1">Peringkat berdasarkan nilai preferensi</p>
             </div>
             <div className="overflow-x-auto">

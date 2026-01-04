@@ -4,7 +4,14 @@ const initialState = {
     sidebars: [
             {
                 id: 1,
+                name: "Dashboard",
+                type: "individu",
+                url: "/dashboard"
+            },
+            {
+                id: 2,
                 status: false,
+                type: "group",
                 name: "Employees",
                 url: [
                     {
@@ -18,8 +25,9 @@ const initialState = {
                 ]
             },
             {
-                id: 2,
+                id: 3,
                 status: false,
+                type: "group",
                 name: "Criterias",
                 url: [
                     {
@@ -33,8 +41,9 @@ const initialState = {
                 ]
             },
             {
-                id: 3,
+                id: 4,
                 status: false,
+                type: "group",
                 name: "Assessments",
                 url: [
                     {
@@ -56,8 +65,9 @@ const initialState = {
                 ]
             },
             {
-                id: 4,
+                id: 5,
                 status: false,
+                type: "group",
                 name: "Priodes",
                 url: [
                     {
@@ -69,6 +79,18 @@ const initialState = {
                         url: "/dashboard/priodes/create-priode"
                     },
                 ]
+            },
+            {
+                id: 6,
+                name: "Calculate Topsis",
+                type: "individu",
+                url: "/dashboard/topsis-calculate"
+            },
+            {
+                id: 7,
+                name: "Rankings",
+                type: "individu",
+                url: "/rankings"
             },
         ]
 }

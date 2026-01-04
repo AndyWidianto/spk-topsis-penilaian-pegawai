@@ -1,6 +1,6 @@
 "use client";
 import { updateSidebar } from "@/lib/features/sidebarSlice";
-import {  CalendarCheck, Layout, LogOut, Star, Users2 } from "lucide-react";
+import {  CalendarCheck, Layout, LogOut, Star, Users2, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -41,12 +41,8 @@ export default function Sidebar({ sidebarActive, refSidebar, handleLogout }) {
                 </div>
                 <div className="w-full h-[70px]"></div>
                 <nav className="row-span-4 w-full h-[85%] border-0 overflow-y-scroll scroll-hidden">
-                    <Link href="/dashboard" className={`flex items-center gap-2 w-full rounded-md ${isActive('/dashboard')}`}>
-                        <Layout size={20} />
-                        dashboard
-                    </Link>
                     {sidebars.map(bar => (
-                        <div className="w-full" key={bar.id}>
+                        bar.type === "group" ? <div className="w-full" key={bar.id}>
                             <button onClick={() => handleSidebar(bar.name)} className="flex items-center gap-2 p-2 w-full">
                                 <div className="flex w-full items-center gap-2">
                                     {bar.name.toLowerCase() === "employees" && <Users2 size={20} />}
@@ -68,12 +64,13 @@ export default function Sidebar({ sidebarActive, refSidebar, handleLogout }) {
                                     ))}
                                 </ul>
                             </div>
-                        </div>
-                    ))}
-                    <Link href="/dashboard/topsis-calculate" className={`flex items-center gap-2 p-2 rounded-full w-full text-start ${isActive('/ranking')}`}>
-                        <Star size={20} />
-                        Topsis Calculate
+                        </div> : <Link href={bar.url} key={bar.id} className={`flex items-center gap-2 p-2 rounded-md w-full text-start ${isActive(bar.url)}`}>
+                        {bar.name.toLowerCase() === "rankings" && <Trophy size={20} />}
+                        {bar.name.toLowerCase() === "calculate topsis" && <Star size={20} />}
+                        {bar.name.toLowerCase() === "dashboard" && <Layout size={20} />}
+                        {bar.name}
                     </Link>
+                    ))}
                 </nav>
                 </div>
                 <div className="p-2 w-full border-t border-gray-600">

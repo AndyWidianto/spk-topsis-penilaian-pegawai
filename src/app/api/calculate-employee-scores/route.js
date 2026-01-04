@@ -22,7 +22,7 @@ export async function POST(req) {
     }
 }
 
-export async function GET() {
+export async function GET(req) {
     const auth = await req.headers.get("x-vercel-cron");
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
     try {

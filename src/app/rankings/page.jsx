@@ -1,6 +1,8 @@
 "use client";
-import React, { useState } from 'react';
-import { Award, Printer, ArrowLeft, Trophy, User, Star, ThumbsUp, ChartLine } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Award, Printer, ArrowLeft, Trophy, User, Star, ThumbsUp, ChartLine, Users2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const RankingPage = () => {
     const employeeRanking = [
@@ -29,16 +31,42 @@ const RankingPage = () => {
         { id: 23, name: "Yuni Astuti", position: "Procurement Staff", nilai: 0.4321 },
         { id: 24, name: "Zaky Firdaus", position: "IT Support", nilai: 0.4123 }
     ];
+    const [priode, setPriode] = useState(null);
+    const [loading, setLoading] = useState(false);
     const sortedData = employeeRanking.sort((a, b) => b.nilai - a.nilai);
+    const router = useRouter();
+    const totalBestEmployee = priode?.assessments.filter(ats => Number(ats.total_value) > 0.85).length ?? 0;
+    const totalVeryGoodEmployee = priode?.assessments.filter(ats => Number(ats.total_value) > 0.70 && Number(ats.total_value) < 0.85).length ?? 0;
+    const totalGoodEmployee = priode?.assessments.filter(ats => Number(ats.total_value) > 0.55 && Number(ats.total_value) < 0.70).length ?? 0;
+    const totalNeedEvaluation = priode?.assessments.filter(ats => Number(ats.total_value) < 0.55).length ?? 0;
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    const handlePrint = () => {
-        window.print();
+    async function getPriodeFinished() {
+        setLoading(true);
+        try {
+            const res = await fetch("/api/priodes/last-finished", { method: "GET" });
+            if (res.ok) {
+                const resJson = await res.json();
+                console.log(resJson);
+                setPriode(resJson);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }
+    function handlePrint() {
+        const container = document.getElementById("container");
+        if (container) {
+            container.print();
+        }
     };
-
-    const handleBack = () => {
-        alert('Navigasi kembali ke halaman sebelumnya');
+    function handleBack() {
+        router.back();
     };
     function getCategory(nilai) {
+        nilai = Number(nilai);
         if (nilai >= 0.85) {
             return {
                 name: "Pegawai Terbaik",
@@ -66,252 +94,235 @@ const RankingPage = () => {
         }
     }
 
+    useEffect(() => {
+        getPriodeFinished();
+    }, []);
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-8">
-            <div className="max-w-6xl mx-auto">
-                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-indigo-100 p-3 rounded-lg">
-                                <Award className="w-8 h-8 text-indigo-600" />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-800">Hasil Perankingan</h1>
-                                <p className="text-gray-600 mt-1">Sistem Pendukung Keputusan</p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handlePrint}
-                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
-                            >
-                                <Printer className="w-4 h-4" />
-                                Cetak Hasil
-                            </button>
-                            <button
-                                onClick={handleBack}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-md"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                Kembali
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="container mx-auto px-4 py-8 max-w-6xl">
-                    {/* Header */}
-                    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div>
-                                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-                                    <i class="fas fa-trophy text-amber-500 mr-3"></i>
-                                    Hasil Perankingan Pegawai Terbaik
-                                </h1>
-                                <p class="text-gray-600">
-                                    Periode Penilaian: Januari - Desember 2024
-                                </p>
-                            </div>
-                            <div class="flex items-center gap-3 bg-blue-50 px-4 py-3 rounded-lg">
-                                <i class="fas fa-calendar-alt text-blue-500"></i>
-                                <div>
-                                    <p class="text-sm text-gray-600">Tanggal Pengumuman</p>
-                                    <p class="font-semibold text-blue-700">15 Maret 2025</p>
+            <div className="mx-auto">
+                <div className="container mx-auto px-4 py-8 max-w-6xl">
+                    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-indigo-100 p-3 rounded-lg">
+                                    <Award className="w-8 h-8 text-indigo-600" />
                                 </div>
+                                <div>
+                                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                                        Hasil Perankingan Pegawai Terbaik Bulan Ini
+                                    </h1>
+                                    <p className="text-gray-600">
+                                        Periode Penilaian: {months[priode?.month - 1]} {priode?.year}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handlePrint}
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
+                                >
+                                    <Printer className="w-4 h-4" />
+                                    Cetak Hasil
+                                </button>
+                                <button
+                                    onClick={handleBack}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-md"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Kembali
+                                </button>
                             </div>
                         </div>
                     </div>
+                    {loading ? <div className="flex items-center justify-center w-full h-full"><div className="rounded-full h-11 w-11 border-4 animate-spin border-gray-300 border-t-blue-600"></div></div> : 
+                    <div className="" id="container">
+                        {/* Informasi Statistik */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 no-print">
+                            <div className="bg-white rounded-xl shadow p-5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-500 text-sm font-medium">Total Pegawai</p>
+                                        <p className="text-2xl font-bold text-gray-800 mt-1">{priode?.assessments.length}</p>
+                                    </div>
+                                    <div className="bg-blue-100 p-3 rounded-full text-blue-500">
+                                        <Users2 size={20} />
+                                    </div>
+                                </div>
+                            </div>
 
-                    {/* Informasi Statistik */}
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 no-print">
-                        <div class="bg-white rounded-xl shadow p-5">
-                            <div class="flex items-center justify-between">
+                            <div className="bg-white rounded-xl shadow p-5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-500 text-sm font-medium">Pegawai Terbaik</p>
+                                        <p className="text-2xl font-bold text-amber-600 mt-1">{totalBestEmployee}</p>
+                                    </div>
+                                    <div className="bg-amber-100 p-3 rounded-full text-amber-500">
+                                        <Trophy size={20} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow p-5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-500 text-sm font-medium">Sangat Baik</p>
+                                        <p className="text-2xl font-bold text-emerald-600 mt-1">{totalVeryGoodEmployee}</p>
+                                    </div>
+                                    <div className="bg-emerald-100 p-3 rounded-full text-emerald-500">
+                                        <ThumbsUp size={20} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow p-5">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-500 text-sm font-medium">Perlu Evaluasi</p>
+                                        <p className="text-2xl font-bold text-rose-600 mt-1">{totalNeedEvaluation}</p>
+                                    </div>
+                                    <div className="bg-rose-100 p-3 rounded-full text-rose-500">
+                                        <ChartLine size={20} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tabel Ranking */}
+                        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                            <div className="px-6 py-5 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center">
                                 <div>
-                                    <p class="text-gray-500 text-sm font-medium">Total Pegawai</p>
-                                    <p class="text-2xl font-bold text-gray-800 mt-1">24</p>
+                                    <h2 className="text-xl font-bold text-gray-800">Daftar Ranking Pegawai</h2>
+                                    <p className="text-gray-600 text-sm mt-1">Diurutkan berdasarkan nilai preferensi tertinggi</p>
                                 </div>
-                                <div class="bg-blue-100 p-3 rounded-full">
-                                    <i class="fas fa-users text-blue-500 text-xl"></i>
+                                <div className="mt-3 md:mt-0">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <i className="fas fa-info-circle mr-2"></i>
+                                        <span id="date-range"></span>
+                                    </span>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="bg-white rounded-xl shadow p-5">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm font-medium">Pegawai Terbaik</p>
-                                    <p class="text-2xl font-bold text-amber-600 mt-1">5</p>
-                                </div>
-                                <div class="bg-amber-100 p-3 rounded-full">
-                                    <i class="fas fa-star text-amber-500 text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl shadow p-5">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm font-medium">Sangat Baik</p>
-                                    <p class="text-2xl font-bold text-emerald-600 mt-1">8</p>
-                                </div>
-                                <div class="bg-emerald-100 p-3 rounded-full">
-                                    <i class="fas fa-thumbs-up text-emerald-500 text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-xl shadow p-5">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm font-medium">Perlu Evaluasi</p>
-                                    <p class="text-2xl font-bold text-rose-600 mt-1">3</p>
-                                </div>
-                                <div class="bg-rose-100 p-3 rounded-full">
-                                    <i class="fas fa-chart-line text-rose-500 text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Tabel Ranking */}
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                        <div class="px-6 py-5 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Daftar Ranking Pegawai</h2>
-                                <p class="text-gray-600 text-sm mt-1">Diurutkan berdasarkan nilai preferensi tertinggi</p>
-                            </div>
-                            <div class="mt-3 md:mt-0">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    <span id="date-range"></span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                                            Peringkat
-                                        </th>
-                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                            Nama Pegawai
-                                        </th>
-                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
-                                            Nilai Preferensi
-                                        </th>
-                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-48">
-                                            Kategori Penilaian
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200" id="ranking-table">
-                                    {/* Data ranking akan diisi oleh JavaScript */}
-                                    {sortedData.map((alt, index) => (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    {(index + 1) <= 3 ? <div class={`flex items-center justify-center w-10 h-10 rounded-full ${(index + 1) === 1 ? 'bg-amber-500' : (index + 1) === 2 ? 'bg-gray-400' : 'bg-amber-700'}`}>
-                                                        <span class="text-white font-bold">{(index + 1)}</span>
-                                                    </div> : <span class="text-lg font-medium ${(index + 1) <= 10 ? 'text-blue-600' : 'text-gray-700'}">{(index + 1)}</span> }
-                                                    {(index + 1) === 1 ? <span class="ml-3 px-3 py-1 text-xs font-bold bg-amber-500 text-white rounded-full">Pegawai Terbaik</span> : ''}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center">
-                                                    <div class={`flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full ${(index + 1) === 1 ? 'bg-amber-100' : 'bg-blue-100'}`}>
-                                                        <div class={`${(index + 1) === 1 ? 'text-amber-600' : 'fas fa-user text-blue-500'}`}>
-                                                            <User size={25} />
+                                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                                                Peringkat
+                                            </th>
+                                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                                Nama Pegawai
+                                            </th>
+                                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                                                Nilai Preferensi
+                                            </th>
+                                            <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-48">
+                                                Kategori Penilaian
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200" id="ranking-table">
+                                        {/* Data ranking akan diisi oleh JavaScript */}
+                                        {priode && priode.assessments.map((alt, index) => (
+                                            <tr key={alt.id}>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center">
+                                                        {(index + 1) <= 3 ? <div className={`flex items-center justify-center w-10 h-10 rounded-full ${(index + 1) === 1 ? 'bg-amber-500' : (index + 1) === 2 ? 'bg-gray-400' : 'bg-amber-700'}`}>
+                                                            <span className="text-white font-bold">{(index + 1)}</span>
+                                                        </div> : <span className={`text-lg font-medium ${(index + 1) <= 10 ? 'text-blue-600' : 'text-gray-700'}`}>{(index + 1)}</span>}
+                                                        {(index + 1) === 1 ? <span className="hidden md:block ml-3 px-3 py-1 text-xs font-bold bg-amber-500 text-white rounded-full">Pegawai Terbaik</span> : ''}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <div className={`flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full ${(index + 1) === 1 ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                                                            <div className={`${(index + 1) === 1 ? 'text-amber-600' : 'fas fa-user text-blue-500'}`}>
+                                                                <User size={25} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-semibold text-gray-900">{alt.employees.name}</div>
+                                                            <div className="text-sm text-gray-500">{alt.employees.position}</div>
                                                         </div>
                                                     </div>
-                                                    <div class="ml-4">
-                                                        <div class="text-sm font-semibold text-gray-900">{alt.name}</div>
-                                                        <div class="text-sm text-gray-500">{alt.position}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className={`text-lg font-bold ${(index + 1) === 1 ? 'text-amber-600' : (index + 1) <= 5 ? 'text-blue-600' : 'text-gray-700'}`}>
+                                                        {Number(alt.total_value).toFixed(2)}
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class={`text-lg font-bold ${(index + 1) === 1 ? 'text-amber-600' : (index + 1) <= 5 ? 'text-blue-600' : 'text-gray-700'}`}>
-                                                    {alt.nilai}
-                                                </div>
-                                                <div class="text-xs text-gray-500 mt-1">
-                                                    {(index + 1) === 1 ? 'Nilai Tertinggi' : `#${(index + 1)} dari ${sortedData.length}`}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getCategory(alt.nilai).color}`}>
-                                                    <div className="mr-2">
-                                                        {getCategory(alt.nilai).icon}
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {(index + 1) === 1 ? 'Nilai Tertinggi' : `#${(index + 1)} dari ${priode?.assessments.length ?? 0}`}
                                                     </div>
-                                                    {getCategory(alt.nilai).name}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getCategory(alt.total_value).color}`}>
+                                                        <div className="mr-2">
+                                                            {getCategory(alt.total_value).icon}
+                                                        </div>
+                                                        {getCategory(alt.total_value).name}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Legenda Kategori */}
-                    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Kategori Penilaian</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="flex items-center p-3 rounded-lg border border-amber-200 bg-amber-50">
-                                <div class="w-3 h-3 rounded-full bg-amber-500 mr-3"></div>
-                                <div>
-                                    <p class="font-medium text-amber-800">Pegawai Terbaik</p>
-                                    <p class="text-sm text-amber-600">Nilai ≥ 0.8500</p>
+                        {/* Legenda Kategori */}
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Kategori Penilaian</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="flex items-center p-3 rounded-lg border border-amber-200 bg-amber-50">
+                                    <div className="w-3 h-3 rounded-full bg-amber-500 mr-3"></div>
+                                    <div>
+                                        <p className="font-medium text-amber-800">Pegawai Terbaik</p>
+                                        <p className="text-sm text-amber-600">Nilai ≥ 0.8500</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="flex items-center p-3 rounded-lg border border-emerald-200 bg-emerald-50">
-                                <div class="w-3 h-3 rounded-full bg-emerald-500 mr-3"></div>
-                                <div>
-                                    <p class="font-medium text-emerald-800">Sangat Baik</p>
-                                    <p class="text-sm text-emerald-600">Nilai 0.7000 - 0.8499</p>
+                                <div className="flex items-center p-3 rounded-lg border border-emerald-200 bg-emerald-50">
+                                    <div className="w-3 h-3 rounded-full bg-emerald-500 mr-3"></div>
+                                    <div>
+                                        <p className="font-medium text-emerald-800">Sangat Baik</p>
+                                        <p className="text-sm text-emerald-600">Nilai 0.7000 - 0.8499</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="flex items-center p-3 rounded-lg border border-blue-200 bg-blue-50">
-                                <div class="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
-                                <div>
-                                    <p class="font-medium text-blue-800">Baik</p>
-                                    <p class="text-sm text-blue-600">Nilai 0.5500 - 0.6999</p>
+                                <div className="flex items-center p-3 rounded-lg border border-blue-200 bg-blue-50">
+                                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
+                                    <div>
+                                        <p className="font-medium text-blue-800">Baik</p>
+                                        <p className="text-sm text-blue-600">Nilai 0.5500 - 0.6999</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="flex items-center p-3 rounded-lg border border-rose-200 bg-rose-50">
-                                <div class="w-3 h-3 rounded-full bg-rose-500 mr-3"></div>
-                                <div>
-                                    <p class="font-medium text-rose-800">Perlu Evaluasi</p>
-                                    <p class="text-sm text-rose-600">Nilai &t; 0.5500</p>
+                                <div className="flex items-center p-3 rounded-lg border border-rose-200 bg-rose-50">
+                                    <div className="w-3 h-3 rounded-full bg-rose-500 mr-3"></div>
+                                    <div>
+                                        <p className="font-medium text-rose-800">Perlu Evaluasi</p>
+                                        <p className="text-sm text-rose-600">Nilai {'<'} 0.5500</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/*  Tombol Aksi */}
-                    <div class="flex flex-col sm:flex-row justify-center gap-4 no-print">
-                        <button id="print-btn" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-200 flex items-center justify-center gap-2">
-                            <i class="fas fa-print"></i>
-                            Cetak Hasil
-                        </button>
-                        <button id="export-btn" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-md transition duration-200 flex items-center justify-center gap-2">
-                            <i class="fas fa-file-export"></i>
-                            Ekspor Data
-                        </button>
-                        <button id="back-btn" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg shadow-md transition duration-200 flex items-center justify-center gap-2">
-                            <i class="fas fa-arrow-left"></i>
-                            Kembali ke Dashboard
-                        </button>
-                    </div>
+                        {/*  Tombol Aksi */}
+                        <div className="flex flex-col sm:flex-row justify-center gap-4 no-print">
+                            <button id="export-btn" className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-md transition duration-200 flex items-center justify-center gap-2">
+                                <i className="fas fa-file-export"></i>
+                                Ekspor Data
+                            </button>
+                            <Link href="/dashboard" className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg shadow-md transition duration-200 flex items-center justify-center gap-2">
+                                Kembali ke Dashboard
+                            </Link>
+                        </div>
+                    </div>}
 
                     {/* Footer */}
-                    <div class="mt-10 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+                    <div className="mt-10 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
                         <p>© 2025 Departemen Sumber Daya Manusia. Hasil perankingan ini dihitung menggunakan metode SPK (TOPSIS).</p>
-                        <p class="mt-1">Hasil ini merupakan keputusan akhir dan tidak menampilkan proses perhitungan.</p>
+                        <p className="mt-1">Hasil ini merupakan keputusan akhir dan tidak menampilkan proses perhitungan.</p>
                     </div>
                 </div>
             </div>

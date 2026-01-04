@@ -18,6 +18,7 @@ export async function dashboard() {
                         ranking: null
                     }
                 },
+                orderBy: { ranking: "asc" },
                 include: {
                     employees: true
                 }
