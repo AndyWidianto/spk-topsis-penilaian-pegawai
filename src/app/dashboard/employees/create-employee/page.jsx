@@ -273,7 +273,10 @@ const EmployeeForm = () => {
               disabled={loading}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              {loading ? '...Loading' : 'Save'}
+              {loading ? <div className="flex items-center justify-center gap-2">
+              <div className="animate-spin border-2 border-white border-t-2 border-t-blue-500 h-5 w-5 rounded-full mx-auto"></div>
+                Processing
+              </div> : 'Save'}
             </button>
           </div>
         </div>

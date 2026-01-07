@@ -19,7 +19,7 @@ const initialState = {
                         url: "/dashboard/employees"
                     },
                     {
-                        name: "Create Users",
+                        name: "Add Employee",
                         url: "/dashboard/employees/create-employee"
                     }
                 ]
@@ -51,17 +51,9 @@ const initialState = {
                         url: "/dashboard/assessments"
                     },
                     {
-                        name: "Create Assement",
+                        name: "Create Assessment",
                         url: "/dashboard/assessments/create-assessment"
                     },
-                    // {
-                    //     name: "Assessment detail",
-                    //     url: "/dashboard/assessments/details"
-                    // },
-                    // {
-                    //     name: "Create Detail",
-                    //     url: "/dashboard/assessments/create-assessment-detail"
-                    // },
                 ]
             },
             {

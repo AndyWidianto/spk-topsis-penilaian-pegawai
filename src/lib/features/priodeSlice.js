@@ -11,6 +11,9 @@ const priodeSlince = createSlice({
         setPriodes(state, action) {
             state.priodes = action.payload;
         },
+        addPriode(state, action) {
+            state.priodes.push(action.payload);
+        },
         updatePriode(state, action) {
             const { id } = action.payload;
             const findIndex = state.priodes.findIndex(p => p.id === id);
@@ -25,5 +28,5 @@ const priodeSlince = createSlice({
     }
 });
 
-export const { updatePriode, setPriodes, deletePriode } = priodeSlince.actions;
+export const { updatePriode, setPriodes, deletePriode, addPriode } = priodeSlince.actions;
 export default priodeSlince.reducer;

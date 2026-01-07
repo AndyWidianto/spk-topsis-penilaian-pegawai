@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Search, Plus, Edit2, Trash2, Moon, Sun, X } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import UpdateAssessment from './sections/updateAssessment';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,7 +32,7 @@ export default function AssessmentTable() {
   const inputBg = darkMode ? 'bg-gray-700' : 'bg-gray-50';
   const hoverBg = darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
 
-  const months = [{ value: 1, label: "January" }, { value: 2, label: "February" }, { value: 3, label: "March", }, { value: 4, label: "April" }, { value: 5, label: "May" }, { value: 6, label: "June" }, { value: 7, label: "July" }, { value: 8, label: "August" }, { value: 9, label: "September" }, { value: 10, label: "October" }, { value: 11, label: "November" }, { value: 12, label: "December" }];
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const getPriodeId = async (id) => {
     setLoading(true);
@@ -65,9 +65,9 @@ export default function AssessmentTable() {
     }
   }
   const getPriode = async () => {
-    if (priode?.id === priode?.id && priode?.assessments.length > 0) return;
-    if (priode?.id) {
-      return await getPriodeId();
+    if (priode && priode.assessments.length > 0) return;
+    if (priode && priode.id) {
+      return await getPriodeId(priode.id);
     }
     await getPriodeLast();
   }
@@ -94,7 +94,6 @@ export default function AssessmentTable() {
       console.error(err);
     }
   }
-
   const getPriodes = async () => {
     if (priodes.length > 0) return;
     try {
@@ -105,9 +104,13 @@ export default function AssessmentTable() {
       console.error(err);
     }
   }
-  const handleSelectPriode = (priode) => {
-    getPriodeId(priode.id);
-    setIsDropdownOpen(false);
+  const handleSelectPriode = (e) => {
+    const id = e.target.value;
+    console.log(id);
+    if (id.trim()) {
+      getPriodeId(Number(id));
+      setIsDropdownOpen(false);
+    }
   }
   const getCriterias = async () => {
     if (criterias.length > 0) return;
@@ -161,17 +164,50 @@ export default function AssessmentTable() {
             className='fixed w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
           >
             <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0a0a2f]">
-              <div className="flex justify-end w-[500px]">
-                <button onClick={() => setIsDropdownOpen(false)} className='p-2 font-bold text-gray-800'><X size={20} /></button>
-              </div>
-              <div className="bg-gray-50 w-[450px] p-2 rounded-md">
-                <h2 className="text-xl font-semi">Select Tanggal dan Tahun</h2>
-                <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet.</p>
-                <ul className='max-h-[250px] overflow-scroll scroll-hidden'>
-                  {priodes.map(priode => (
-                    <li key={priode.id}><button onClick={() => handleSelectPriode(priode)} className="w-full p-2 hover:bg-gray-100">{months.find(m => m.value === priode.month)?.label}-{priode.year}</button></li>
-                  ))}
-                </ul>
+              <div
+                className={`relative bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all duration-300 ${isDropdownOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                  }`}
+                role="dialog" aria-modal="true" aria-labelledby="modal-title"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                  <h2 id="modal-title" className="text-xl font-semibold text-gray-800">
+                    Pilih Periode
+                  </h2>
+                  <button
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1"
+                    aria-label="Tutup modal"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6">
+                  <label
+                    htmlFor="periode-select"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Periode Penilaian
+                  </label>
+                  <select
+                    id="periode-select"
+                    value={months[priode.month - 1] ?? ''}
+                    onChange={handleSelectPriode}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-700 cursor-pointer hover:border-gray-400"
+                  >
+                    <option value="">Select Priode</option>
+                    {priodes.map((p, index) => (
+                      <option key={index} value={index + 1}>
+                        {months[p.month - 1]} {p.year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </motion.div>)}
@@ -181,15 +217,12 @@ export default function AssessmentTable() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>Assessment Management</h1>
+              <div className="flex items-center gap-2">
+                <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>Assessment Management</h1>
+                <span className="block bg-blue-100 p-1 text-blue-600 rounded-md">{priode ? `${months[priode.month - 1]} ${priode.year}` : ''}</span>
+              </div>
               <p className={textSecondary}>Manage assessments</p>
             </div>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-3 rounded-lg ${inputBg} ${textPrimary} ${hoverBg} transition-colors`}
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
           </div>
 
           {/* Controls */}
@@ -208,7 +241,7 @@ export default function AssessmentTable() {
               </div>
 
               {/* Role Filter */}
-              <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className='p-3 rounded-xl text-gray-600 px-4'>{priode ? `${months.find(m => m.value === priode.month)?.label}-${priode.year}` : 'Select Priode'}</button>
+              <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className='py-2.5 rounded-lg text-white px-4 bg-blue-600'>Select Priode</button>
 
               {/* Add Assessment Button */}
               <Link href="/dashboard/create-assessment" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
@@ -246,7 +279,7 @@ export default function AssessmentTable() {
                       {assessment.assessment_details.map(detail => (
                         <td key={detail.id} className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
                           {detail.nilai}
-                      </td>
+                        </td>
                       ))}
                       <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
                         <div className="flex items-center justify-center gap-1 text-sm rounded-full bg-green-200">

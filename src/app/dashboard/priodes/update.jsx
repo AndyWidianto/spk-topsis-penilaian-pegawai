@@ -1,15 +1,15 @@
 "use client";
-import { addPriode } from '@/lib/features/priodeSlice';
+import { updatePriode } from '@/lib/features/priodeSlice';
 import { fetchWithAuth } from '@/lib/fetcher';
 import { Calendar } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-const ModernPeriodForm = () => {
+export default function FormUpdatePriode({ data, cancel, id }) {
     const [formData, setFormData] = useState({
-        month: '',
-        year: '',
-        status: 'active'
+        month: data.month ?? '',
+        year: data.year ?? '',
+        status: data.status ?? 'active'
     });
     const [loading, setLoading] = useState(false);
     const [isDropdownOpenMonth, setIsDropdownOpenMonth] = useState(false);
@@ -31,6 +31,10 @@ const ModernPeriodForm = () => {
     function handleSelect(data) {
         const { name, value } = data;
         setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
         Validate(name);
     }
     function Validate(name) {
@@ -44,7 +48,7 @@ const ModernPeriodForm = () => {
             setIsDropdownOpenMonth(false);
         }
     }
-    async function handleSubmit(e) {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {
             month: !formData.month,
@@ -56,11 +60,12 @@ const ModernPeriodForm = () => {
         if (newErrors.month && newErrors.year && newErrors.status) return;
         setLoading(true);
         try {
-            const res = await fetchWithAuth("/api/priodes", { method: "POST", body: JSON.stringify(formData) });
+            const res = await fetchWithAuth(`/api/priodes/${id}`, { method: "POST", body: JSON.stringify(formData) });
             const resJson = await res.json();
             alert('Priode saved successfully!');
             setFormData({ month: '', year: '', status: 'active' });
-            dispatch(addPriode(resJson));
+            dispatch(updatePriode(resJson));
+            cancel();
         } catch (err) {
             console.error(err);
             alert("Terjadi kesalahan!");
@@ -79,17 +84,17 @@ const ModernPeriodForm = () => {
         })
     }, []);
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 pt-10">
             <div className="max-w-2xl p-6 w-full">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-800 mb-2">
-                        Form Penilaian Karyawan
-                    </h1>
-                    <p className="text-slate-600">
-                        Sistem Pendukung Keputusan - Evaluasi Kinerja
-                    </p>
-                </div>
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+                            Form Penilaian Karyawan
+                        </h1>
+                        <p className="text-slate-600">
+                            Sistem Pendukung Keputusan - Evaluasi Kinerja
+                        </p>
+                    </div>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Month Field */}
                         <div className='pt-3'>
@@ -112,7 +117,7 @@ const ModernPeriodForm = () => {
                                     <ul className="flex flex-col gap-1 text-gray-600 font-medium">
                                         {months.map((month, index) => (
                                             <li key={index}>
-                                                <button type="button" className='w-full p-2 text-start hover:bg-blue-200 hover:text-gray-800 transation duration-200' onClick={() => handleSelect({ name: "month", value: index + 1 })}>
+                                                <button type="button" onClick={() => handleSelect({ name: "month", value: index + 1 })} className='w-full p-2 px-3 transaction duration-200 hover:bg-blue-200 hover:text-gray-800 text-start'>
                                                     {month}
                                                 </button>
                                             </li>
@@ -145,7 +150,7 @@ const ModernPeriodForm = () => {
                                     <ul className="flex flex-col gap-1 text-gray-600 font-medium">
                                         {years.map((year, index) => (
                                             <li key={index}>
-                                                <button type="button" className='w-full p-2 text-start hover:bg-blue-200 hover:text-gray-800 transation duration-200' onClick={() => handleSelect({ name: "year", value: year })}>
+                                                <button type="button" className='w-full p-2 px-3 text-start transaction duration-200 hover:bg-blue-200 hover:text-gray-800' onClick={() => handleSelect({ name: "year", value: year })}>
                                                     {year}
                                                 </button>
                                             </li>
@@ -167,17 +172,20 @@ const ModernPeriodForm = () => {
                                 id="status"
                                 name="status"
                                 value={formData.status}
-                                disabled
+                                onChange={handleChange}
                                 className={`w-full text-gray-600 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors ${errors.status ? 'border-red-500' : 'border-slate-300'
                                     }`} />
-                            <p className="text-sm text-gray-600">status akan update otomatis ketika hari itu tiba</p>
+                            <p className="text-sm text-gray-600">status akan update otomatis</p>
                         </div>
 
                         {/* Buttons */}
                         <div className="flex justify-end space-x-4 pt-10">
+                            <button type="button" onClick={() => cancel()} className="bg-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors duration-200 focus:ring-2 focus:ring-gray-500 focus:outline-none">
+                                cancel
+                            </button>
                             <button
                                 type="submit"
-                                className="w-[150px] bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             >
                                 {loading ? <div className="flex items-center justify-center gap-2">
                                 <div className="animate-spin border-2 border-white border-t-2 border-t-blue-500 h-5 w-5 rounded-full mx-auto"></div>
@@ -191,5 +199,3 @@ const ModernPeriodForm = () => {
         </div>
     );
 };
-
-export default ModernPeriodForm;

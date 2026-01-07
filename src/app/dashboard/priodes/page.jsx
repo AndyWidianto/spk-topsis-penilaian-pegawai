@@ -1,13 +1,19 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Search, Plus, Edit2, Trash2, Moon, Sun } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
 import Loading from '@/app/components/loading';
+import { motion, AnimatePresence } from 'framer-motion';
+import FormUpdatePriode from "./update";
+import { useDispatch, useSelector } from 'react-redux';
+import { setPriodes } from '@/lib/features/priodeSlice';
 
 export default function PriodesTable() {
-  const [priodes, setPriodes] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [show, setShow] = useState(false);
+  const [priode, setPriode] = useState({});
+  const [priodeId, setPriodeId] = useState(null);
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
   const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
@@ -17,89 +23,65 @@ export default function PriodesTable() {
   const inputBg = darkMode ? 'bg-gray-700' : 'bg-gray-50';
   const hoverBg = darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
 
-    const months = [
-        {
-            value: 1,
-            label: "January"
-        },
-        {
-            value: 2,
-            label: "February"
-        },
-        {
-            value: 3,
-            label: "March",
-        },
-        {
-            value: 4,
-            label: "April"
-        },
-        {
-            value: 5,
-            label: "May"
-        },
-        {
-            value: 6,
-            label: "June"
-        },
-        {
-            value: 7,
-            label: "July"
-        },
-        {
-            value: 8,
-            label: "August"
-        },
-        {
-            value: 9,
-            label: "September"
-        },
-        {
-            value: 10,
-            label: "October"
-        },
-        {
-            value: 11,
-            label: "November"
-        },
-        {
-            value: 12,
-            label: "December"
-        }
-    ];
+  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const priodes = useSelector((state) => state.priode.priodes);
+  const dispatch = useDispatch();
 
   async function getPriodes() {
+    if (priodes.length > 0) return setLoading(false);
     setLoading(true);
     try {
         const res = await fetch("/api/priodes", { method: "GET" });
-        const resJson = await res.json();
-        console.log(resJson);
-        setPriodes(resJson);
+        if (res.ok) {
+          const resJson = await res.json();
+          dispatch(setPriodes(resJson));
+        }
     } catch (err) {
         console.error(err);
     } finally {
         setLoading(false);
     }
   }
+  function handleUpdate(priode) {
+    setShow(true);
+    setPriode(priode);
+    setPriodeId(priode.id);
+  }
+  function handleCancel() {
+    setShow(false);
+    setPriodeId(null);
+    setPriode({});
+  }
   useEffect(() => {
     getPriodes();
   }, []);
 
   return (
+    <>
+        <AnimatePresence mode="wait">
+            {show && (
+            <motion.div
+                initial={{ opacity: 0, y: -40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -40 }}
+                transition={{
+                duration: 1,
+                ease: [0.22, 1, 0.36, 1],
+                }}
+                className='fixed w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
+            >
+                <FormUpdatePriode data={priode} cancel={() => handleCancel()} id={priodeId} />
+            </motion.div>
+            )}
+        </AnimatePresence>
     <div className={`min-h-screen ${bgClass} p-8 transition-colors duration-200`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>User Management</h1>
-            <p className={textSecondary}>Manage your team members and their roles</p>
+            <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>Priode Management</h1>
+            <p className={textSecondary}>Manage priode and status</p>
           </div>
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`p-3 rounded-lg ${inputBg} ${textPrimary} ${hoverBg} transition-colors`}
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
         </div>
 
         {/* Controls */}
@@ -110,7 +92,7 @@ export default function PriodesTable() {
               <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${textSecondary}`} size={20} />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search priodes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full pl-10 pr-4 py-2.5 ${inputBg} border ${borderColor} rounded-lg ${textPrimary} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
@@ -120,7 +102,7 @@ export default function PriodesTable() {
             {/* Add User Button */}
             <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
               <Plus size={20} />
-              Add New User
+              Add New Priode
             </button>
           </div>
         </div>
@@ -145,7 +127,7 @@ export default function PriodesTable() {
                     <td className="px-6 py-4 whitespace-nowrap"><span className={`font-medium ${textPrimary}`}>{priode.id}</span></td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <span className={`font-medium ${textPrimary}`}>{months.find(month => month.value === priode.month).label}</span>
+                        <span className={`font-medium ${textPrimary}`}>{months[priode.month - 1]}</span>
                       </div>
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
@@ -169,7 +151,7 @@ export default function PriodesTable() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className={`p-2 ${hoverBg} rounded-lg ${textSecondary} hover:text-blue-600 transition-colors`}>
+                        <button onClick={() => handleUpdate(priode)} className={`p-2 ${hoverBg} rounded-lg ${textSecondary} hover:text-blue-600 transition-colors`}>
                           <Edit2 size={18} />
                         </button>
                         <button className={`p-2 ${hoverBg} rounded-lg ${textSecondary} hover:text-red-600 transition-colors`}>
@@ -186,16 +168,17 @@ export default function PriodesTable() {
           {/* Empty State */}
           {loading ? <div className="flex justify-center"><Loading  /></div>: priodes.length === 0 && (
             <div className="text-center py-12">
-              <p className={`text-lg ${textSecondary}`}>No users found matching your filters</p>
+              <p className={`text-lg ${textSecondary}`}>No priodes found matching your filters</p>
             </div>
           )}
         </div>
         {/* Footer Info */}
         <div className={`mt-6 flex items-center justify-between ${textSecondary} text-sm`}>
-          <p>Showing {priodes.length} of {priodes.length} users</p>
-          <p>© 2024 User Management Dashboard</p>
+          <p>Showing {priodes.length} of {priodes.length} priodes</p>
+          <p>© 2024 Priode Management Dashboard</p>
         </div>
       </div>
     </div>
+    </>
   );
 };

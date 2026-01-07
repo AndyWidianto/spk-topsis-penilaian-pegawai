@@ -12,7 +12,7 @@ export async function POST(req, { params }) {
     }
     try {
         const token = auth.split(" ")[1];
-        const priode = await updatePriode(token, id, body);
+        const priode = await updatePriode(token, Number(id), body);
         return Response.json(priode);
     } catch (err) {
         console.error(err);
@@ -20,7 +20,7 @@ export async function POST(req, { params }) {
     }
 }
 
-export async function DELETE({ params }) {
+export async function DELETE(req, { params }) {
     const { id } = await params;
     const auth = await req.headers.get("authorization");
     if (!auth) {
@@ -30,7 +30,7 @@ export async function DELETE({ params }) {
     }
     try {
         const token = auth.split(" ")[1];
-        await deletePriode(token, id);
+        await deletePriode(token, Number(id));
         return Response.json({
             message: "Berhasil delete"
         });

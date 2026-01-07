@@ -101,12 +101,6 @@ export default function CriteriaTable() {
               <h1 className={`text-3xl font-semibold ${textPrimary} mb-2`}>Criteria Management</h1>
               <p className={textSecondary}>Manage criteria and weight</p>
             </div>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-3 rounded-lg ${inputBg} ${textPrimary} ${hoverBg} transition-colors`}
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
           </div>
 
           {/* Controls */}

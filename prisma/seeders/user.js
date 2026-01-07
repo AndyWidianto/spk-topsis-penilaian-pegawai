@@ -7,7 +7,9 @@ const passwordHash = await hash("andy12345", 10);
 const payload = {
     username: "Andy Widianto",
     email: "andy@gmail.com",
-    password: passwordHash
+    password: passwordHash,
+    role: "super_admin",
+    active: true
 }
 const user = await prisma.users.findFirst({
     where: {
@@ -17,9 +19,10 @@ const user = await prisma.users.findFirst({
 });
 
 if (!user) {
-    await prisma.users.create({
+    const newUser = await prisma.users.create({
         data: payload
     });
+    console.log(newUser);
 }
 
 console.log("Berhasil Create User");
