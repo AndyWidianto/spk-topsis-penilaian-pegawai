@@ -6,7 +6,10 @@ import { fetchWithAuth } from "@/lib/fetcher";
 import { useRouter } from "next/navigation";
 
 export default function LayoutDashboard({ children }) {
-    const [sidebarActive, setSidebarActive] = useState(window.innerWidth > 800);
+    const [sidebarActive, setSidebarActive] = useState(() => {
+        if (typeof window === "undefined") return false;
+        return window.innerWidth > 800;
+    });
     const refSidebar = useRef(null);
     const router = useRouter();
 
