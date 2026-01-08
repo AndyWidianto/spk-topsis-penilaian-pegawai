@@ -25,6 +25,9 @@ export async function CalculateTopsisOtomatis(month, year) {
     if (!priode) {
         throw new AppError("Priode tidak tersedia", 404);
     }
+    if (priode.assessments.length < 1) {
+        return { priode, criterias };
+    }
     const alternatives = priode.assessments.map(ats => {
         return {
             id: ats.id,
@@ -124,7 +127,7 @@ export async function CalculateTopsisOtomatis(month, year) {
             data: { month, year, status: "active" }
         });
     }
-return { criterias, alternatives, totalNilaiCriterias, normalisasiMatriks, bestValue, worstValue, distances, preferences };
+return { priode, criterias };
 }
 
 export async function CalculateTopsisManual(token, id) {
@@ -140,7 +143,6 @@ export async function CalculateTopsisManual(token, id) {
             year: date.getFullYear()
         }
     }
-    console.log("Query: ", query);
     const criterias = (await prisma.criterias.findMany()).map((c) => {
         c.weight = c.weight / 100;
         return { ...c };
@@ -158,6 +160,9 @@ export async function CalculateTopsisManual(token, id) {
     });
     if (!priode) {
         throw new AppError("Priode tidak tersedia", 404);
+    }
+    if (priode.assessments.length < 1) {
+        return { priode, criterias };
     }
     const alternatives = priode.assessments.map(ats => {
         return {
@@ -262,5 +267,5 @@ export async function CalculateTopsisManual(token, id) {
             data: { month, year, status: "active" }
         });
     }
-    return { criterias, alternatives, matrix_normalization: normalisasiMatriks, best_value: bestValue, worst_value: worstValue, distances, preferences };
+    return { criterias, priode };
 }

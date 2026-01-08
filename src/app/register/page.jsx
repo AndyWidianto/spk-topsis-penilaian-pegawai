@@ -182,11 +182,6 @@ export default function RegisterPage() {
     // Implementasi Google OAuth di sini
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSubmit();
-    }
-  };
 
   const getPasswordStrength = () => {
     const password = formData.password;
@@ -217,7 +212,7 @@ export default function RegisterPage() {
               className="w-full h-full"
             >
               {slides.map(slide => (
-                <SwiperSlide>
+                <SwiperSlide key={slide.id}>
                   <div className="flex items-end relative w-full h-full">
                     <img src={slide.image} alt={slide.name} className="absolute w-full h-full object-cover z-0" />
                     <div className="absolute bottom-20 z-10 flex flex-col items-center justify-center w-full px-4 text-white text-shadow-lg/30 text-shadow-black">

@@ -14,50 +14,6 @@ export default function Dashboard() {
     nilai: parseFloat(alt.total_value).toFixed(2),
   }));
 
-
-  async function getDashbord() {
-    try {
-      const res = await fetch("/api/dashboard", { method: "GET" });
-      if (res.ok) {
-        const resJson = await res.json();
-        console.log(resJson);
-        const bestRanking = resJson.assessments?.find(a => a.ranking === 1);
-        setAlternatives(resJson.assessments ?? []);
-        setStats([
-          {
-            title: 'Total Employees',
-            value: resJson.total_employees ?? '',
-            change: '+12%',
-            changeType: 'positive',
-            icon: Target,
-            iconBg: 'bg-blue-100',
-            iconColor: 'text-blue-600',
-          },
-          {
-            title: 'Kriteria Aktif',
-            value: resJson.total_criterias ?? '',
-            change: '+3 baru',
-            changeType: 'positive',
-            icon: TrendingUp,
-            iconBg: 'bg-green-100',
-            iconColor: 'text-green-600',
-          },
-          {
-            title: 'Ranking Tertinggi',
-            value: bestRanking?.employees.name ?? '',
-            change: Number(bestRanking?.total_value).toFixed(2) ?? '',
-            changeType: 'neutral',
-            icon: Award,
-            iconBg: 'bg-purple-100',
-            iconColor: 'text-purple-600',
-          },
-        ])
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
   const quickMenuItems = [
     { icon: Calculator, label: 'Hitung TOPSIS', color: 'bg-blue-600 hover:bg-blue-700' },
     { icon: Database, label: 'Data Master', color: 'bg-emerald-600 hover:bg-emerald-700' },
@@ -65,6 +21,47 @@ export default function Dashboard() {
   ];
 
   useEffect(() => {
+    async function getDashbord() {
+      try {
+        const res = await fetch("/api/dashboard", { method: "GET" });
+        if (res.ok) {
+          const resJson = await res.json();
+          const bestRanking = resJson.assessments?.find(a => a.ranking === 1);
+          setAlternatives(resJson.assessments ?? []);
+          setStats([
+            {
+              title: 'Total Employees',
+              value: resJson.total_employees ?? '',
+              change: '+12%',
+              changeType: 'positive',
+              icon: Target,
+              iconBg: 'bg-blue-100',
+              iconColor: 'text-blue-600',
+            },
+            {
+              title: 'Kriteria Aktif',
+              value: resJson.total_criterias ?? '',
+              change: '+3 baru',
+              changeType: 'positive',
+              icon: TrendingUp,
+              iconBg: 'bg-green-100',
+              iconColor: 'text-green-600',
+            },
+            {
+              title: 'Ranking Tertinggi',
+              value: bestRanking?.employees.name ?? '',
+              change: Number(bestRanking?.total_value).toFixed(2) ?? '',
+              changeType: 'neutral',
+              icon: Award,
+              iconBg: 'bg-purple-100',
+              iconColor: 'text-purple-600',
+            },
+          ])
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
     getDashbord();
   }, [])
 
@@ -90,8 +87,8 @@ export default function Dashboard() {
                   <h3 className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</h3>
                   <span
                     className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${stat.changeType === 'positive'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-700'
                       }`}
                   >
                     {stat.change}
@@ -157,12 +154,12 @@ export default function Dashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${alt.ranking === 1
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : alt.ranking === 2
-                                ? 'bg-gray-200 text-gray-700'
-                                : alt.ranking === 3
-                                  ? 'bg-orange-100 text-orange-700'
-                                  : 'bg-gray-100 text-gray-600'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : alt.ranking === 2
+                              ? 'bg-gray-200 text-gray-700'
+                              : alt.ranking === 3
+                                ? 'bg-orange-100 text-orange-700'
+                                : 'bg-gray-100 text-gray-600'
                             }`}
                         >
                           {alt.ranking}

@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Next.js + Prisma Project
 
-## Getting Started
+Project ini dibangun menggunakan **Next.js** sebagai framework frontend & backend (API Routes / App Router) dan **Prisma ORM** sebagai Object Relational Mapper untuk pengelolaan database.
 
-First, run the development server:
+## 📌 Tech Stack
+
+* **Next.js** (App Router / Pages Router)
+* **Prisma ORM**
+* **Database**: PostgreSQL / MySQL / SQLite (sesuai konfigurasi)
+* **Node.js**
+* **TypeScript**
+
+---
+
+## 📂 Struktur Folder
+
+```
+.
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+├── src/
+│   ├── app/            # App Router
+│   ├── errors/         # custom error
+│   ├── lib/
+│   └── components/
+├── .env
+├── package.json
+└── README.md
+```
+
+---
+
+## ⚙️ Instalasi
+
+1. **Clone repository**
+
+```bash
+git clone https://github.com/username/nama-project.git
+cd nama-project
+```
+
+2. **Install dependencies**
+
+```bash
+npm install
+# atau
+yarn install
+```
+
+3. **Konfigurasi environment**
+
+Buat file `.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/db_name"
+```
+
+---
+
+## 🧩 Prisma Setup
+
+1. **Inisialisasi Prisma**
+
+```bash
+npx prisma init
+```
+
+2. **Edit schema Prisma** (`prisma/schema.prisma`)
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+```
+
+3. **Migrasi database**
+
+```bash
+npm run migrate
+```
+
+4. **Generate Prisma Client**
+
+```bash
+npm run generate
+```
+
+---
+
+## ▶️ Menjalankan Project
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Akses di browser:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🛠️ Prisma Studio
 
-To learn more about Next.js, take a look at the following resources:
+Untuk melihat data secara visual:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx prisma studio
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📝 Catatan
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+* Pastikan koneksi database aktif sebelum menjalankan migrasi
+* Jangan lupa `.env` **tidak di-commit** ke repository
+* Gunakan singleton Prisma Client untuk menghindari error koneksi
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📄 Lisensi
+
+MIT License
+
+---
+
+✨ Dibuat dengan Next.js & Prisma

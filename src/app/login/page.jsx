@@ -84,8 +84,8 @@ export default function LoginPage() {
               }}
               className="w-full h-full"
             >
-              {slides.map(slide => (
-                <SwiperSlide>
+              {slides.map((slide) => (
+                <SwiperSlide key={slide.id}>
                   <div className="flex items-end relative w-full h-full">
                     <img src={slide.image} alt={slide.name} className="absolute w-full h-full object-cover z-0" />
                     <div className="absolute bottom-20 z-10 flex flex-col items-center justify-center w-full px-4 text-white text-shadow-lg/30 text-shadow-black">

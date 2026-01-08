@@ -14,17 +14,16 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchWithAuth } from '@/lib/fetcher';
 import { setPriodes } from '@/lib/features/priodeSlice';
+import { setCriterias } from '@/lib/features/criteriaSlice';
 
 // Komponen utama
 const TOPSISCalculator = () => {
   // State untuk data contoh
-  const [alternatives, setAlternatives] = useState([]);
-  const [criteria, setCriteria] = useState([]);
   const [normalization, setNormalization] = useState([]);
   const [distances, setDistances] = useState([]);
   const [preferences, setPreferences] = useState([]);
-  const [bestValue, setBestValue] = useState({});
-  const [worstValue, setWorstValue] = useState({});
+  const [bestValue, setBestValue] = useState(null);
+  const [worstValue, setWorstValue] = useState(null);
   const [expandedSections, setExpandedSections] = useState({
     decisionMatrix: true,
     normalization: false,
@@ -35,41 +34,63 @@ const TOPSISCalculator = () => {
   });
   const [loading, setLoading] = useState(false);
   const [priode, setPriode] = useState(null);
+  const [assessments, setAssessments] = useState([]);
   const priodes = useSelector((state) => state.priode.priodes);
+  const criterias = useSelector((state) => state.criteria.criterias);
   const dispatch = useDispatch();
 
   const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const getPriodes = async () => {
-    let nowPriode = null;
+  function handleSelectPriode(e) {
+    const id = e.target.value;
+    const findPriode = priodes.find(p => p.id === Number(id));
+    if (findPriode) {
+      setNormalization([]);
+      setBestValue(null);
+      setWorstValue(null);
+      setPreferences([]);
+      setDistances(distances);
+      setPriode(findPriode);
+    }
+  }
+  async function getPriodes() {
+    const date = new Date();
+    if (!priode && priodes.length > 0) {
+      const priodeNow = priodes.find(r => (r.month - 1) === date.getMonth());
+      return setPriode(priodeNow)
+    }
+    if (priodes.length > 0) return;
+    const res = await fetch("/api/priodes", { method: "GET" });
+    if (res.ok) {
+      const resJson = await res.json();
+      const priodeNow = resJson.find(r => (r.month - 1) === date.getMonth());
+      setPriode(priodeNow);
+      dispatch(setPriodes(resJson));
+    }
+  }
+  async function getCriterias() {
+    if (criterias.length > 0) return;
+    const res = await fetch("/api/criterias", { method: "GET" });
+    if (res.ok) {
+      const resJson = await res.json();
+      console.log(criterias);
+      dispatch(setCriterias(resJson));
+    }
+  }
+  async function getPriode() {
+    if (!priode) return;
     try {
-      if (priodes.length > 0) {
-        nowPriode = priodes[0];
-        return setPriode(priodes[0])
-      };
-      const res = await fetch("/api/priodes", { method: "GET" });
+      const res = await fetch(`/api/priodes/${priode.id}`, { method: "GET" });
       if (res.ok) {
         const resJson = await res.json();
-        setPriode(resJson[0]);
-        dispatch(setPriodes(resJson));
-        nowPriode = resJson[0];
+        setAssessments(resJson.assessments);
       }
     } catch (err) {
       console.error(err);
-    } finally {
-        const dataStorage = localStorage.getItem(`priode-${nowPriode.id}`);
-        const data = JSON.parse(dataStorage);
-        setAlternatives(data.alternatives ?? []);
-        setCriteria(data.criterias ?? []);
-        setNormalization(data.matrix_normalization ?? []);
-        setDistances(data.distances ?? []);
-        setPreferences(data.preferences ?? []);
-        setBestValue(data.best_value ?? []);
-        setWorstValue(data.worst_value ?? []);
     }
   }
   // Fungsi hitung ulang
-  const handleRecount = async () => {
+  async function handleRecount() {
     // Logika perhitungan ulang TOPSIS dapat ditambahkan di sini
     setLoading(true);
     try {
@@ -78,14 +99,6 @@ const TOPSISCalculator = () => {
       if (res.ok) {
         const resJson = await res.json();
         console.log(resJson);
-        localStorage.setItem(`priode-${priode.id}`, JSON.stringify(resJson.data));
-        setAlternatives(resJson.data.alternatives);
-        setCriteria(resJson.data.criterias);
-        setDistances(resJson.distances);
-        setPreferences(resJson.data.preferences);
-        setNormalization(resJson.data.matrix_normalization);
-        setBestValue(resJson.data.best_value);
-        setWorstValue(resJson.data.worst_value);
       }
     } catch (err) {
       console.error(err);
@@ -94,19 +107,92 @@ const TOPSISCalculator = () => {
     }
   }
   // Fungsi toggle section
-  const toggleSection = (section) => {
+  function toggleSection(section) {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
   };
+  async function calculateTopsis() {
+    if (!priode || priode?.status !== "finished") return;
+    if (assessments.length < 1 && criterias.length < 1) return;
+    const bValue = {};
+    const wValue = {};
+    const normalisasi = [];
+    const sumKuadrat = {};
+    const distances = [];
+    const NilaiPreferences = [];
+    const totalWeight = criterias.reduce((acc, curr) => acc + curr.weight, 0);
+    criterias.forEach(c => {
+      assessments.forEach(ats => {
+        ats.assessment_details.map(ads => {
+          if (ads.criteria_id === c.id) {
+            sumKuadrat[c.id] = (sumKuadrat[c.id] || 0) + ads.nilai ** 2;
+          }
+        });
+      });
+    });
+    assessments.forEach(ats => {
+      const matrik = ats.assessment_details.map(ads => {
+        const criteria = criterias.find(c => c.id === ads.criteria_id);
+        if (criteria) {
+          const nilaiMatrikR = ads.nilai / Math.sqrt(sumKuadrat[criteria.id]);
+          const nilaiMatrikY = nilaiMatrikR * (criteria.weight / totalWeight);
+          if (criteria.type === "benefit") {
+            bValue[criteria.id] = Math.max(bValue[criteria.id] ?? nilaiMatrikY, nilaiMatrikY);
+            wValue[criteria.id] = Math.min(wValue[criteria.id] ?? nilaiMatrikY, nilaiMatrikY);
+          } else {
+            bValue[criteria.id] = Math.min(bValue[criteria.id] ?? nilaiMatrikY, nilaiMatrikY);
+            wValue[criteria.id] = Math.max(wValue[criteria.id] ?? nilaiMatrikY, nilaiMatrikY);
+          }
+          ads.nilai_r = nilaiMatrikR;
+          ads.nilai_y = nilaiMatrikY;
+        }
+        return { ...ads };
+      });
+      normalisasi.push({ id: ats.id, name: ats.employees.name, matrik: matrik });
+    });
+    normalisasi.forEach(n => {
+      let distancePositif = 0;
+      let distanceNegatif = 0;
+      n.matrik.map(m => {
+        distancePositif = distancePositif + (m.nilai_y - bValue[m.criteria_id]) ** 2;
+        distanceNegatif = distanceNegatif + (m.nilai_y - wValue[m.criteria_id]) ** 2;
+      });
+      const nilaiV = distanceNegatif / (distancePositif + distanceNegatif);
+      distances.push({ id: n.id, name: n.name, distance_positif: distancePositif, distance_negatif: distanceNegatif });
+      NilaiPreferences.push({ id: n.id, name: n.name, distance_positif: distancePositif, distance_negatif: distanceNegatif, nilai_v: nilaiV });
+    });
+
+    setNormalization(normalisasi);
+    setBestValue(bValue);
+    setWorstValue(wValue);
+    setPreferences(NilaiPreferences.sort((a, b) => b.nilai_v - a.nilai_v));
+    setDistances(distances);
+  }
+  async function firstRender() {
+    setLoading(true);
+    try {
+      await getPriodes();
+      await getCriterias();
+      await getPriode();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    getPriodes();
-  }, []);
+    firstRender();
+  }, [priode]);
+  useEffect(() => {
+    calculateTopsis();
+  }, [assessments]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
+      <div className={`${loading ? 'fixed bg-gray-100 h-full -w-full' : ''}`}></div>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 mt-10">
@@ -125,14 +211,14 @@ const TOPSISCalculator = () => {
           <button onClick={handleRecount} className="p-2 px-5 rounded-md bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all mb-6">
             Menghitung Ulang
           </button>
-          <select name="priode" id="priode" className="p-3 px-5 rounded-md border-gray-400 shadow-md transition-all mb-6">
+          <select name="priode" id="priode" onChange={handleSelectPriode} className="p-3 px-5 rounded-md border-gray-400 shadow-md transition-all mb-6">
             <option value="">Select Priode</option>
             {priodes && priodes.map(p => (
-              <option defaultValue={p.id} key={p.id} selected={p.id === priode.id}>{months[p.month - 1]} {p.year}</option>
+              <option value={p.id} key={p.id}>{months[p.month - 1]} {p.year}</option>
             ))}
           </select>
         </div>
-        {priode && priode.status === "finished" ? <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div className="lg:col-span-1 space-y-6">
             {/* Data Alternatif */}
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -144,7 +230,7 @@ const TOPSISCalculator = () => {
                   </h2>
                 </div>
                 <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                  {alternatives.length} alternatif
+                  {assessments.length} alternatif
                 </span>
               </div>
 
@@ -153,18 +239,18 @@ const TOPSISCalculator = () => {
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="p-3 text-left">Alternatif</th>
-                      {criteria.map(c => (
+                      {criterias.map(c => (
                         <th key={c.id} className="p-3 text-center">{c.name}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {alternatives.map(alt => (
-                      <tr key={alt.id} className="border-b hover:bg-gray-50">
-                        <td className="p-3 font-medium">{alt.name}</td>
-                        {criteria.map(c => (
+                    {assessments.map(ats => (
+                      <tr key={ats.id} className="border-b hover:bg-gray-50">
+                        <td className="p-3 font-medium">{ats.employees.name}</td>
+                        {criterias.map(c => (
                           <td key={c.id} className="p-3 text-center">
-                            {alt.detail.find(detail => detail.criteria_id === c.id)?.nilai}
+                            {ats.assessment_details.find(detail => detail.criteria_id === c.id)?.nilai}
                           </td>
                         ))}
                       </tr>
@@ -186,7 +272,7 @@ const TOPSISCalculator = () => {
               </div>
 
               <div className="space-y-3">
-                {criteria.map((c, index) => (
+                {criterias.map((c) => (
                   <div key={c.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div>
                       <span className="font-medium">{c.name}</span>
@@ -200,7 +286,7 @@ const TOPSISCalculator = () => {
                         {c.type === 'benefit' ? 'Benefit' : 'Cost'}
                       </span>
                       <span className="font-bold text-blue-700">
-                        {c.weight.toFixed(2)}
+                        {(c.weight / criterias.reduce((sum, c) => sum + c.weight, 0)).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -209,7 +295,7 @@ const TOPSISCalculator = () => {
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-gray-700">Total Bobot</span>
                     <span className="font-bold text-blue-700">
-                      {criteria.reduce((sum, c) => sum + c.weight, 0).toFixed(2)}
+                      {criterias.reduce((sum, c) => sum + (c.weight / criterias.reduce((sum, c) => sum + c.weight, 0)), 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -218,7 +304,7 @@ const TOPSISCalculator = () => {
           </div>
 
           {/* Kolom Kanan: Proses Perhitungan */}
-          <div className="lg:col-span-2 space-y-6">
+          {priode && priode.status === "finished" ? <div className="lg:col-span-2 space-y-6">
             {/* Proses 1: Matriks Keputusan */}
             <SectionCard
               title="1. Matriks Keputusan (X)"
@@ -231,18 +317,18 @@ const TOPSISCalculator = () => {
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="p-3 text-left">Alternatif</th>
-                      {criteria.map(c => (
+                      {criterias.map(c => (
                         <th key={c.id} className="p-3 text-center">{c.name}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {alternatives.map((alt) => (
+                    {assessments.map((alt) => (
                       <tr key={alt.id} className="border-b hover:bg-gray-50">
-                        <td className="p-3 font-medium">{alt.name}</td>
-                        {criteria.map((c) => (
+                        <td className="p-3 font-medium">{alt.employees.name}</td>
+                        {criterias.map((c) => (
                           <td key={c.id} className="p-3 text-center">
-                            {alt.detail.find(detail => detail.criteria_id === c.id)?.nilai}
+                            {alt.assessment_details.find(detail => detail.criteria_id === c.id)?.nilai}
                           </td>
                         ))}
                       </tr>
@@ -264,7 +350,7 @@ const TOPSISCalculator = () => {
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="p-3 text-left">Alternatif</th>
-                      {criteria.map(c => (
+                      {criterias.map(c => (
                         <th key={c.id} className="p-3 text-center">{c.name}</th>
                       ))}
                     </tr>
@@ -273,9 +359,9 @@ const TOPSISCalculator = () => {
                     {normalization.map((n) => (
                       <tr key={n.id} className="border-b hover:bg-gray-50">
                         <td className="p-3 font-medium">{n.name}</td>
-                        {criteria.map((c) => (
+                        {criterias.map((c) => (
                           <td key={c.id} className="p-3 text-center">
-                            {n.details.find(detail => detail.criteria_id === c.id)?.total_r.toFixed(4)}
+                            {n.matrik.find(detail => detail.criteria_id === c.id)?.nilai_r.toFixed(4)}
                           </td>
                         ))}
                       </tr>
@@ -297,7 +383,7 @@ const TOPSISCalculator = () => {
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="p-3 text-left">Alternatif</th>
-                      {criteria.map(c => (
+                      {criterias.map(c => (
                         <th key={c.id} className="p-3 text-center">{c.name}</th>
                       ))}
                     </tr>
@@ -306,9 +392,9 @@ const TOPSISCalculator = () => {
                     {normalization.map((n) => (
                       <tr key={n.id} className="border-b hover:bg-gray-50">
                         <td className="p-3 font-medium">{n.name}</td>
-                        {criteria.map((c) => (
+                        {criterias.map((c) => (
                           <td key={c.id} className="p-3 text-center">
-                            {n.details.find(detail => detail.criteria_id === c.id)?.total.toFixed(4)}
+                            {n.matrik.find(detail => detail.criteria_id === c.id)?.nilai_y.toFixed(4)}
                           </td>
                         ))}
                       </tr>
@@ -332,7 +418,7 @@ const TOPSISCalculator = () => {
                     Solusi Ideal Positif (A⁺)
                   </h4>
                   <div className="space-y-2">
-                    {criteria.map((c, index) => (
+                    {bestValue && criterias.map((c, index) => (
                       <div key={c.id} className="flex justify-between items-center">
                         <span>{c.name}</span>
                         <span className="font-bold">
@@ -348,7 +434,7 @@ const TOPSISCalculator = () => {
                     Solusi Ideal Negatif (A⁻)
                   </h4>
                   <div className="space-y-2">
-                    {criteria.map((c, index) => (
+                    {worstValue && criterias.map((c, index) => (
                       <div key={c.id} className="flex justify-between items-center">
                         <span>{c.name}</span>
                         <span className="font-bold">
@@ -382,10 +468,10 @@ const TOPSISCalculator = () => {
                       <tr key={dts.id} className="border-b hover:bg-gray-50">
                         <td className="p-3 font-medium">{dts.name}</td>
                         <td className="p-3 text-center font-medium">
-                          {dts.distance_plus.toFixed(4)}
+                          {dts.distance_positif.toFixed(4)}
                         </td>
                         <td className="p-3 text-center font-medium">
-                          {dts.distance_min.toFixed(4)}
+                          {dts.distance_negatif.toFixed(4)}
                         </td>
                       </tr>
                     ))}
@@ -416,10 +502,10 @@ const TOPSISCalculator = () => {
                       <tr key={pfs.id} className="border-b hover:bg-gray-50">
                         <td className="p-3 font-medium">{pfs.name}</td>
                         <td className="p-3 text-center">
-                          {pfs.distance_plus.toFixed(4)}
+                          {pfs.distance_positif.toFixed(4)}
                         </td>
                         <td className="p-3 text-center">
-                          {pfs.distance_min.toFixed(4)}
+                          {pfs.distance_negatif.toFixed(4)}
                         </td>
                         <td className="p-3 text-center font-bold text-green-700 text-lg">
                           {pfs.nilai_v.toFixed(4)}
@@ -450,8 +536,8 @@ const TOPSISCalculator = () => {
                   <div
                     key={item.id}
                     className={`flex items-center justify-between p-4 rounded-lg transition-all ${item.ranking === 1
-                        ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-200 shadow-md'
-                        : 'bg-white hover:shadow'
+                      ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-200 shadow-md'
+                      : 'bg-white hover:shadow'
                       }`}
                   >
                     <div className="flex items-center gap-4">
@@ -508,8 +594,8 @@ const TOPSISCalculator = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div> : <><div className="text-center">Pada priode ini belum di latih</div></>}
+          </div> : <div className="text-center">Pada priode ini belum di latih</div>}
+        </div>
       </div>
     </div>
   );

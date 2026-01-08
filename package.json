@@ -2,10 +2,16 @@
   "name": "penilaian_pegawai",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "node prisma/seeders/user.js"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
+    "migrate": "npx prisma migrate dev",
+    "generate": "npx prisma generate",
+    "seed": "npx prisma db seed",
     "lint": "eslint"
   },
   "dependencies": {
