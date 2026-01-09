@@ -22,7 +22,7 @@ export default function UpdateCriteria({ data, id, cancel }) {
         { value: 'benefit', label: 'Benefit' },
         { value: 'cost', label: 'Cost' },
     ];
-    const handleChange = (e) => {
+    function handleChange(e) {
         const { name, value } = e.target;
         console.log("ini namanya: ", name, "ini valuenya: ", value);
         setFormData((prev) => ({
@@ -36,7 +36,7 @@ export default function UpdateCriteria({ data, id, cancel }) {
             }));
         }
     };
-    const handleChangeWeight = (e) => {
+    function handleChangeWeight(e) {
         const { name, value } = e.target;
         const weight = value === "" ? 0 : parseInt(value);
         setFormData((prev) => ({
@@ -56,7 +56,7 @@ export default function UpdateCriteria({ data, id, cancel }) {
             }
         }
     };
-    const validateForm = () => {
+    function validateForm() {
         console.log(formData);
         const newErrors = {};
 
@@ -76,8 +76,7 @@ export default function UpdateCriteria({ data, id, cancel }) {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
-    const handleSubmit = async () => {
+    async function handleSubmit() {
         if (!validateForm()) return console.error(errors);
         try {
 
@@ -98,7 +97,7 @@ export default function UpdateCriteria({ data, id, cancel }) {
         }
     };
 
-    const handleCancel = () => {
+    function handleCancel() {
         setFormData({
             nip: '',
             name: '',

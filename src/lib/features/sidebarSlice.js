@@ -16,10 +16,12 @@ const initialState = {
                 url: [
                     {
                         name: "Employees",
+                        type: "public",
                         url: "/dashboard/employees"
                     },
                     {
                         name: "Add Employee",
+                        type: "private",
                         url: "/dashboard/employees/create-employee"
                     }
                 ]
@@ -32,10 +34,12 @@ const initialState = {
                 url: [
                     {
                         name: "Criterias",
+                        type: "public",
                         url: "/dashboard/criterias"
                     },
                     {
                         name: "Create Criteria",
+                        type: "private",
                         url: "/dashboard/criterias/create-criteria"
                     }
                 ]
@@ -48,10 +52,12 @@ const initialState = {
                 url: [
                     {
                         name: "Assessments",
+                        type: "public",
                         url: "/dashboard/assessments"
                     },
                     {
                         name: "Create Assessment",
+                        type: "private",
                         url: "/dashboard/assessments/create-assessment"
                     },
                 ]
@@ -64,10 +70,12 @@ const initialState = {
                 url: [
                     {
                         name: "Priodes",
+                        type: "public",
                         url: "/dashboard/priodes"
                     },
                     {
                         name: "Create Priode",
+                        type: "private",
                         url: "/dashboard/priodes/create-priode"
                     },
                 ]

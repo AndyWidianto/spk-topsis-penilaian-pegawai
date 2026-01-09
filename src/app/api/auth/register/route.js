@@ -16,7 +16,7 @@ export async function POST(req) {
         })
         return Response.json({
             message: "Berhasil Register",
-            accesstoken: access
+            accessToken: access
         });
     } catch (err) {
         console.error(err);

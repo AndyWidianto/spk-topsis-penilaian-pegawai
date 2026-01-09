@@ -48,7 +48,7 @@ export default function FormUpdatePriode({ data, cancel, id }) {
             setIsDropdownOpenMonth(false);
         }
     }
-    const handleSubmit = async (e) => {
+    async function handleSubmit(e) {
         e.preventDefault();
         const newErrors = {
             month: !formData.month,

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteEmployee, setEmployees } from '@/lib/features/employeeSlice';
+import { fetchWithAuth, JWTDecode } from '@/lib/fetcher';
 
 export default function EmployeeTable() {
   const [employee, setEmployee] = useState({});
@@ -15,6 +16,7 @@ export default function EmployeeTable() {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [user, setUser] = useState(null);
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
   const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
@@ -26,6 +28,8 @@ export default function EmployeeTable() {
 
   const employees = useSelector((state) => state.employee.employees);
   const dispatch = useDispatch();
+
+  const roleValidation = user && user?.role === "super_admin" || user?.role === "admin";
 
   function handleUpdate(id, data) {
     setEmployee(data);
@@ -52,7 +56,7 @@ export default function EmployeeTable() {
   async function handleRemove(id) {
     if (!confirm("Apakah anda yakin ingin menghapusnya?")) return;
     try {
-      const res = await fetch(`/api/employees/${id}`, { method: "DELETE" });
+      const res = await fetchWithAuth(`/api/employees/${id}`, { method: "DELETE" });
       const resJson = await res.json();
       console.log(resJson);
       alert(resJson.message);
@@ -61,10 +65,21 @@ export default function EmployeeTable() {
       console.error(err);
     }
   }
+  async function getUser() {
+    try {
+      const res = await JWTDecode();
+      if (res) {
+        setUser(res);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
   useEffect(() => {
     if (employees.length < 1) {
       getEmployees();
     }
+    getUser();
   }, []);
 
   return (
@@ -111,11 +126,11 @@ export default function EmployeeTable() {
                 />
               </div>
 
-              {/* Add User Button */}
-              <Link href="/dashboard/employees/create-employee" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
+              {/* Add Criteria Button */}
+              {roleValidation && <Link href="/dashboard/employees/create-employee" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
                 <Plus size={20} />
                 Add New User
-              </Link>
+              </Link>}
             </div>
           </div>
 
@@ -131,7 +146,7 @@ export default function EmployeeTable() {
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Division</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Status</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Date Create</th>
-                    <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>
+                    {roleValidation && <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -163,7 +178,7 @@ export default function EmployeeTable() {
                           day: 'numeric'
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {roleValidation && <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleUpdate(employee.id, employee)} className={`p-2 ${hoverBg} rounded-lg ${textSecondary} hover:text-blue-600 transition-colors`}>
                             <Edit2 size={18} />
@@ -172,7 +187,7 @@ export default function EmployeeTable() {
                             <Trash2 size={18} />
                           </button>
                         </div>
-                      </td>
+                      </td>}
                     </tr>
                   ))}
                 </tbody>

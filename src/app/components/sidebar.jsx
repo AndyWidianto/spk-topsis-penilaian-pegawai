@@ -6,24 +6,23 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export default function Sidebar({ sidebarActive, refSidebar, handleLogout }) {
+export default function Sidebar({ sidebarActive, refSidebar, handleLogout, user }) {
     const pathname = usePathname();
     const sidebars = useSelector((state) => state.sidebar.sidebars);
     const dispatch = useDispatch();
-
     function isActive(path) {
         return `transition-all ease duration-300 ${path === pathname ? "bg-blue-500 text-white p-3" : "p-2"}`;
     }
     function handleSidebar(name) {
         dispatch(updateSidebar(name));
     }
-    useEffect(() => {
-        function firtsActive() {
-            const path = pathname.split("/")[2];
-            if (path) {
-                dispatch(updateSidebar(path));
-            }
+    function firtsActive() {
+        const path = pathname.split("/")[2];
+        if (path) {
+            dispatch(updateSidebar(path));
         }
+    }
+    useEffect(() => {
         firtsActive();
     }, [])
 
@@ -52,10 +51,14 @@ export default function Sidebar({ sidebarActive, refSidebar, handleLogout }) {
                                     </div>
                                     <img src="/arrow_right.svg" alt="" className={`fill-white transition duration-300 ease ${bar.status ? 'rotate-90' : 'rotate-0'}`} />
                                 </button>
-                                <div className={`w-full transition-all overflow-hidden duration-300 ease`} style={{ height: `${bar.status ? `${bar.url.length * 45}` : '0'}px` }}>
+                                <div className={`w-full transition-all overflow-hidden duration-300 ease`} style={{ height: `${bar.status ? user && user.role === "super_admin" || user.role === "admin" ? `${bar.url.length * 45}`: `${bar.url.filter(u => u.type === "public").length * 45}` : '0'}px` }}>
                                     <ul className="pl-3">
-                                        {bar.url.map(url => (
-                                            <li key={url.name}>
+                                        {user && bar.url.map(url => (
+                                            user.role === "admin" || user.role === "super_admin" ? <li key={url.name}>
+                                                <Link href={url.url} className={`block rounded-md w-full text-start ${isActive(url.url)}`}>
+                                                    {url.name}
+                                                </Link>
+                                            </li> : url.type === "public" && <li key={url.name}>
                                                 <Link href={url.url} className={`block rounded-md w-full text-start ${isActive(url.url)}`}>
                                                     {url.name}
                                                 </Link>

@@ -1,13 +1,13 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Search, Plus, Edit2, Trash2, Moon, Sun } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Moon, Sun, RollerCoaster } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import UpdateCriteria from './sections/update';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteCriteria, setCriterias } from '@/lib/features/criteriaSlice';
 import Loading from '@/app/components/loading';
 import Link from 'next/link';
-import { fetchWithAuth } from '@/lib/fetcher';
+import { fetchWithAuth, JWTDecode } from '@/lib/fetcher';
 
 export default function CriteriaTable() {
   const [loading, setLoading] = useState(false);
@@ -17,9 +17,12 @@ export default function CriteriaTable() {
   const [darkMode, setDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [user, setUser]  = useState(null);
 
   const criterias = useSelector((state) => state.criteria.criterias);
   const dispatch = useDispatch();
+
+  const roleValidation = user && user?.role === "super_admin" || user?.role === "admin";
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
   const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
@@ -29,7 +32,7 @@ export default function CriteriaTable() {
   const inputBg = darkMode ? 'bg-gray-700' : 'bg-gray-50';
   const hoverBg = darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
 
-  const getCriterias = async () => {
+  async function getCriterias() {
     setLoading(true);
     try {
       const res = await fetch("/api/criterias", { method: "GET" });
@@ -44,17 +47,17 @@ export default function CriteriaTable() {
       setLoading(false);
     }
   }
-  const handleUpdate = (id, data) => {
+  function handleUpdate(id, data) {
     setCriteria(data);
     setCriteriaId(id);
     setShow(true);
   }
-  const handleCancel = () => {
+  function handleCancel() {
     setShow(false);
     setCriteria({});
     setCriteriaId(null);
   }
-  const handleDelete = async (id) => {
+  async function handleDelete(id) {
     if (!confirm(`Apakah anda yakin ingin menghapus ${id}?`)) return;
     try {
       const res = await fetchWithAuth(`/api/criterias/${id}`, { method: "DELETE" });
@@ -68,11 +71,22 @@ export default function CriteriaTable() {
       console.error(err);
     }
   }
+  async function getUser() {
+    try {
+      const res = await JWTDecode();
+      if (res) {
+        setUser(res);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   useEffect(() => {
     if (criterias.length < 1) {
       getCriterias();
     }
+    getUser();
   }, []);
 
   return (
@@ -129,10 +143,10 @@ export default function CriteriaTable() {
                 <option value="cost">Cost</option>
               </select>
 
-              <Link href="/dashboard/criterias/create-criteria" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
+              {roleValidation && <Link href="/dashboard/criterias/create-criteria" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
                 <Plus size={20} />
                 Add New Criteria
-              </Link>
+              </Link>}
             </div>
           </div>
 
@@ -147,7 +161,7 @@ export default function CriteriaTable() {
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Weight</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Type</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Date Created</th>
-                    <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>
+                    {roleValidation && <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -176,7 +190,7 @@ export default function CriteriaTable() {
                           day: 'numeric'
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {roleValidation && <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleUpdate(criteria.id, criteria)} className={`p-2 ${hoverBg} rounded-lg ${textSecondary} hover:text-blue-600 transition-colors`}>
                             <Edit2 size={18} />
@@ -185,7 +199,7 @@ export default function CriteriaTable() {
                             <Trash2 size={18} />
                           </button>
                         </div>
-                      </td>
+                      </td>}
                     </tr>
                   ))}
                 </tbody>

@@ -41,26 +41,26 @@ export default function RegisterPage() {
     }
   ]
 
-  const validatePassword = (password) => {
+  function validatePassword(password) {
     if (password.length === 0) return null;
     if (password.length < 8) return 'Password must be at least 8 characters';
     return null;
   };
 
-  const validateConfirmPassword = (password, confirmPassword) => {
+  function validateConfirmPassword(password, confirmPassword) {
     if (confirmPassword.length === 0) return null;
     if (password !== confirmPassword) return 'Passwords do not match';
     return null;
   };
 
-  const validateEmail = (email) => {
+  function validateEmail(email) {
     if (email.length === 0) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return 'Please enter a valid email address';
     return null;
   };
 
-  const handleBlur = (field) => {
+  function handleBlur(field) {
     setTouched({ ...touched, [field]: true });
     
     let newErrors = { ...errors };
@@ -92,7 +92,7 @@ export default function RegisterPage() {
     setErrors(newErrors);
   };
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     
@@ -127,8 +127,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    console.log(formData);
+  async function handleSubmit(e) {
     e.preventDefault();
     const allTouched = {
       username: true,
@@ -153,8 +152,6 @@ export default function RegisterPage() {
     const confirmError = validateConfirmPassword(formData.password, formData.confirmPassword);
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
     else if (confirmError) newErrors.confirmPassword = confirmError;
-    
-    if (!formData.acceptTerms) newErrors.acceptTerms = 'You must accept the terms and conditions';
 
     setErrors(newErrors);
 
@@ -166,7 +163,6 @@ export default function RegisterPage() {
           throw new Error("Registration failed");
         }
         const resJson = await res.json();
-        console.log("Registration successful:", resJson);
         localStorage.setItem("accessToken", resJson.accessToken);
         router.push("/dashboard");
       } catch (err) {
@@ -177,13 +173,13 @@ export default function RegisterPage() {
     }
   };
 
-  const handleGoogleSignUp = () => {
+  function handleGoogleSignUp() {
     console.log('Google sign up clicked');
     // Implementasi Google OAuth di sini
   };
 
 
-  const getPasswordStrength = () => {
+  function getPasswordStrength() {
     const password = formData.password;
     if (password.length === 0) return null;
     if (password.length < 8) return { text: 'Weak', color: 'text-red-500' };

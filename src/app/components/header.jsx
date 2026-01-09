@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Bell,
   Search,
@@ -14,20 +14,13 @@ import {
 } from 'lucide-react';
 import { useSelector } from "react-redux";
 import Link from 'next/link';
-import { getUser } from '@/lib/fetcher';
 
 
-export default function Header({ sidebarActive, actionSidebar, handleLogout }) {
+export default function Header({ sidebarActive, actionSidebar, handleLogout, user }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [query, setQuery] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [user, setUser] = useState({
-    username: "John Doe",
-    email: "",
-    role: "Administrator",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John"
-  });
   const sidebars = useSelector((state) => state.sidebar.sidebars);
   const filteredSidebars = sidebars.filter(sb => sb.name.toLowerCase().includes(query ? query.toLowerCase() : ''));
 
@@ -42,15 +35,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout }) {
     if (!value.trim()) return setQuery(null);
     setQuery(value);
   }
-
   const unreadCount = notifications.filter(n => !n.read).length;
-  React.useEffect(() => {
-    const payload = getUser();
-    console.log("Payload User di Header: ", payload);
-    if (payload) {
-      setUser(payload);
-    }
-  }, []);
 
   return (
     <header className={`fixed top-0 z-40 transition-all duration-200 ${sidebarActive ? window.innerWidth > 800 ? 'w-[calc(100%-280px)] left-[280px]' : 'w-full left-0' : 'w-full left-0'} border-b ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
@@ -84,11 +69,15 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout }) {
               {query && <div className="absolute left-0 top-11 rounded-md shadow-sm border w-full text-start bg-white z-50">
                 <ul>
                   {filteredSidebars.length > 0 ? filteredSidebars.map((item) => (
-                    item.url.map((link, index) => (
-                      <li key={item.id}>
+                    item.type === "group" ? item.url.map((link, index) => (
+                      user && user.role === "super_admin" || user.role === "admin" ? <li key={index}>
+                        <Link href={link.url} className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">{link.name}</Link>
+                      </li> : link.type === "public" && <li key={index}>
                         <Link href={link.url} className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">{link.name}</Link>
                       </li>
-                    ))
+                    )) : <li key={item.id}>
+                      <Link href={item.url} className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">{item.name}</Link>
+                    </li>
                   )) : (
                     <li className="px-4 py-2 text-gray-500">Tidak ada hasil</li>
                   )}
@@ -156,11 +145,6 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout }) {
               <HelpCircle size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
             </button>
 
-            {/* Pengaturan */}
-            <button className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
-              <Settings size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
-            </button>
-
             {/* Profil User */}
             <div className="relative">
               <button
@@ -168,11 +152,14 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout }) {
                 className="flex items-center space-x-3 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <div className="flex items-center">
-                  <img
+                  {/* <img
                     src={user.avatar}
                     alt={user.username}
                     className="h-8 w-8 rounded-full border-2 border-blue-500"
-                  />
+                  /> */}
+                  <div className="flex items-center justify-center bg-blue-300 text-white h-8 w-8 rounded-full border-2 border-blue-500 font-semibold">
+                    {user.username.split('')[0].toUpperCase()}
+                  </div>
                   <div className="hidden md:block ml-3 text-left">
                     <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{user.username}</p>
                     <p className="text-xs text-gray-500">{user.role}</p>

@@ -12,7 +12,7 @@ import {
   Info
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchWithAuth } from '@/lib/fetcher';
+import { fetchWithAuth, JWTDecode } from '@/lib/fetcher';
 import { setPriodes } from '@/lib/features/priodeSlice';
 import { setCriterias } from '@/lib/features/criteriaSlice';
 
@@ -35,10 +35,12 @@ const TOPSISCalculator = () => {
   const [loading, setLoading] = useState(false);
   const [priode, setPriode] = useState(null);
   const [assessments, setAssessments] = useState([]);
+  const [user, setUser] = useState(null);
   const priodes = useSelector((state) => state.priode.priodes);
   const criterias = useSelector((state) => state.criteria.criterias);
   const dispatch = useDispatch();
 
+  const roleValidation = user && user?.role === "super_admin" || user?.role === "admin";
   const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   function handleSelectPriode(e) {
@@ -182,6 +184,16 @@ const TOPSISCalculator = () => {
       setLoading(false);
     }
   }
+  async function getUser() {
+    try {
+      const res = await JWTDecode();
+      if (res) {
+        setUser(res);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   useEffect(() => {
     firstRender();
@@ -189,6 +201,9 @@ const TOPSISCalculator = () => {
   useEffect(() => {
     calculateTopsis();
   }, [assessments]);
+  useEffect(() => {
+    getUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
@@ -208,9 +223,9 @@ const TOPSISCalculator = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button onClick={handleRecount} className="p-2 px-5 rounded-md bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all mb-6">
-            Menghitung Ulang
-          </button>
+          {roleValidation && <button onClick={handleRecount} className="p-2 px-5 rounded-md bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all mb-6">
+            Recount
+          </button>}
           <select name="priode" id="priode" onChange={handleSelectPriode} className="p-3 px-5 rounded-md border-gray-400 shadow-md transition-all mb-6">
             <option value="">Select Priode</option>
             {priodes && priodes.map(p => (
@@ -532,7 +547,7 @@ const TOPSISCalculator = () => {
               </div>
 
               <div className="space-y-4">
-                {preferences.map((item, index) => (
+                {assessments.map((item, index) => (
                   <div
                     key={item.id}
                     className={`flex items-center justify-between p-4 rounded-lg transition-all ${item.ranking === 1
@@ -555,9 +570,9 @@ const TOPSISCalculator = () => {
                         {item.ranking}
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg">{item.name}</h3>
+                        <h3 className="font-bold text-lg">{item.employees.name}</h3>
                         <p className="text-sm text-gray-500">
-                          Nilai Preferensi: <span className="font-semibold">{item.nilai_v.toFixed(4)}</span>
+                          Nilai Preferensi: <span className="font-semibold">{Number(item.total_value).toFixed(4)}</span>
                         </p>
                       </div>
                     </div>

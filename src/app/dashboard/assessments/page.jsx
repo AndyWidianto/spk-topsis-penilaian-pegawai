@@ -9,6 +9,7 @@ import Loading from '@/app/components/loading';
 import { setPriodes } from '@/lib/features/priodeSlice';
 import { setCriterias } from '@/lib/features/criteriaSlice';
 import Link from 'next/link';
+import { JWTDecode } from '@/lib/fetcher';
 
 export default function AssessmentTable() {
   const [assessment, setAssessment] = useState({});
@@ -16,6 +17,7 @@ export default function AssessmentTable() {
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [user, setUser] = useState(null);
   const [show, setShow] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -23,6 +25,8 @@ export default function AssessmentTable() {
   const priodes = useSelector((state) => state.priode.priodes);
   const criterias = useSelector((state) => state.criteria.criterias);
   const dispatch = useDispatch();
+
+  const roleValidation = user && user?.role === "super_admin" || user?.role === "admin";
 
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
   const cardBg = darkMode ? 'bg-gray-800' : 'bg-white';
@@ -34,7 +38,7 @@ export default function AssessmentTable() {
 
   const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const getPriodeId = async (id) => {
+  async function getPriodeId(id) {
     setLoading(true);
     try {
       const res = await fetch(`/api/priodes/${id}`, { method: "GET" });
@@ -49,7 +53,7 @@ export default function AssessmentTable() {
       setLoading(false);
     }
   }
-  const getPriodeLast = async () => {
+  async function getPriodeLast() {
     setLoading(true);
     try {
       const res = await fetch(`/api/priodes/last`, { method: "GET" });
@@ -64,24 +68,24 @@ export default function AssessmentTable() {
       setLoading(false);
     }
   }
-  const getPriode = async () => {
+  async function getPriode() {
     if (priode && priode.assessments.length > 0) return;
     if (priode && priode.id) {
       return await getPriodeId(priode.id);
     }
     await getPriodeLast();
   }
-  const handleUpdate = (id, data) => {
+  function handleUpdate(id, data) {
     setAssessment({ ...data, priode_id: priode?.id });
     setAssessmentId(id);
     setShow(true);
   }
-  const handleCancel = () => {
+  function handleCancel() {
     setAssessment({});
     setAssessmentId(null);
     setShow(false);
   }
-  const handleDelete = async (id) => {
+  async function handleDelete(id) {
     if (!confirm(`Apakah anda yakin ingin menghapus ${id}?`)) return;
     try {
       const res = await fetchWithAuth(`/api/assessments/${id}`, { method: "DELETE" })
@@ -94,7 +98,7 @@ export default function AssessmentTable() {
       console.error(err);
     }
   }
-  const getPriodes = async () => {
+  async function getPriodes() {
     if (priodes.length > 0) return;
     try {
       const res = await fetch("/api/priodes", { method: "GET" });
@@ -104,7 +108,7 @@ export default function AssessmentTable() {
       console.error(err);
     }
   }
-  const handleSelectPriode = (e) => {
+  function handleSelectPriode(e) {
     const id = e.target.value;
     console.log(id);
     if (id.trim()) {
@@ -112,7 +116,7 @@ export default function AssessmentTable() {
       setIsDropdownOpen(false);
     }
   }
-  const getCriterias = async () => {
+  async function getCriterias() {
     if (criterias.length > 0) return;
     try {
       const res = await fetch("/api/criterias", { method: "GET" });
@@ -125,10 +129,21 @@ export default function AssessmentTable() {
       console.error(err);
     }
   }
+  async function getUser() {
+    try {
+      const res = await JWTDecode();
+      if (res) {
+        setUser(res);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
   useEffect(() => {
     getPriode();
     getPriodes();
     getCriterias();
+    getUser();
   }, []);
   useEffect(() => {
     document.documentElement.classList.toggle("no-scroll", isDropdownOpen);
@@ -244,10 +259,10 @@ export default function AssessmentTable() {
               <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} className='py-2.5 rounded-lg text-white px-4 bg-blue-600'>Select Priode</button>
 
               {/* Add Assessment Button */}
-              <Link href="/dashboard/create-assessment" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
+              {roleValidation && <Link href="/dashboard/create-assessment" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium whitespace-nowrap">
                 <Plus size={20} />
                 Add New Assessment
-              </Link>
+              </Link>}
             </div>
           </div>
 
@@ -264,7 +279,7 @@ export default function AssessmentTable() {
                     ))}
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Status</th>
                     <th className={`px-6 py-4 text-left text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Date Created</th>
-                    <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>
+                    {roleValidation && <th className={`px-6 py-4 text-right text-xs font-semibold ${textSecondary} uppercase tracking-wider`}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -294,7 +309,7 @@ export default function AssessmentTable() {
                           day: 'numeric'
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {roleValidation && <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleUpdate(assessment.id, assessment)} className={`p-2 ${hoverBg} rounded-lg ${textSecondary} hover:text-blue-600 transition-colors`}>
                             <Edit2 size={18} />
@@ -303,7 +318,7 @@ export default function AssessmentTable() {
                             <Trash2 size={18} />
                           </button>
                         </div>
-                      </td>
+                      </td>}
                     </tr>
                   ))}
                 </tbody>

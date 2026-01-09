@@ -24,7 +24,6 @@ export async function fetchWithAuth(url, options = {}) {
                 return r.json();
             })
             .then((res) => {
-                console.log("Response Refreshing: ", res);
                 localStorage.setItem("accessToken", res.accessToken);
                 token = res.accessToken;
             })
@@ -37,14 +36,22 @@ export async function fetchWithAuth(url, options = {}) {
     return fetch(url, { ...options, credentials: "include" });
 }
 
-export function getUser() {
-    const token = localStorage.getItem("accessToken");
-    console.log("Ini token", token);
-    if (token) {
+export async function JWTDecode() {
+    let token = localStorage.getItem("accessToken");
+    if (token && token !== "undefined") {
         const payload = token.split('.')[1];
         const decoded = atob(payload);
         const userJson = JSON.parse(decoded);
-        console.log("User dari Token: ", userJson);
+        return userJson;
+    }
+    const res = await fetch("/api/auth/refresh-token", { method: "GET", credentials: "include" });
+    if (res.status === 403) return window.location.href = "/login";
+    if (res.ok) {
+        const resJson = await res.json();
+        console.log(resJson);
+        const payload = resJson.accessToken.split('.')[1];
+        const decoded = atob(payload);
+        const userJson = JSON.parse(decoded);
         return userJson;
     }
     return null;

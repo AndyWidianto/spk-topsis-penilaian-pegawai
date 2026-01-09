@@ -60,6 +60,9 @@ export async function getPriode(id) {
                 include: {
                     employees: true,
                     assessment_details: true
+                },
+                orderBy: {
+                    ranking: "asc"
                 }
             }
         }

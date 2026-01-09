@@ -41,7 +41,7 @@ export default function AssessmentForm() {
   const selectedEmployee = employees.find(emp => emp.id === formData.employee_id);
   const selectedPriode = priodes.find(p => p.id === formData.priode_id);
 
-  const validateForm = () => {
+  function validateForm() {
     const newErrors = {};
 
     if (!formData.employee_id) {
@@ -56,7 +56,7 @@ export default function AssessmentForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     console.log(formData);
     if (!validateForm()) return;
@@ -77,7 +77,7 @@ export default function AssessmentForm() {
     }
   };
 
-  const getEmployees = async () => {
+  async function getEmployees() {
     try {
       const res = await fetch("/api/employees", { method: "GET" });
       const resJson = await res.json();
@@ -88,7 +88,7 @@ export default function AssessmentForm() {
     }
   }
 
-  const getPriodes = async () => {
+  async function getPriodes() {
     try {
       const res = await fetch("/api/priodes", { method: "GET" });
       const resJson = await res.json();
@@ -99,7 +99,7 @@ export default function AssessmentForm() {
     }
   }
 
-  const handleSelect = (name, value) => {
+  function handleSelect(name, value) {
     setFormData(prev => ({ ...prev, [name]: value }));
     setIsDropdownOpenPriode(false);
     setIsDropdownOpen(false);
@@ -112,12 +112,12 @@ export default function AssessmentForm() {
     console.log(formData);
   }
 
-  const handleClick = (e) => {
+  function handleClick(e) {
     if (refPriode.current && !refPriode.current.contains(e.target)) {
       setIsDropdownOpenPriode(false);
     }
   }
-  const getCriterias = async () => {
+  async function getCriterias() {
     if (criterias.length > 0) return;
     try {
       const res = await fetch("/api/criterias", { method: "GET" });
@@ -130,7 +130,7 @@ export default function AssessmentForm() {
       console.error(err);
     }
   }
-  const handleChangeCriteria = (e) => {
+  function handleChangeCriteria(e) {
     const { name, value } = e.target;
     const findIndex = formData.assessment_details.findIndex(detail => detail.id === parseInt(name));
     if (findIndex !== -1) {

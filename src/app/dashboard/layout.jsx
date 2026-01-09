@@ -4,11 +4,15 @@ import Header from "../components/header";
 import { useEffect, useRef, useState } from "react";
 import { fetchWithAuth } from "@/lib/fetcher";
 import { useRouter } from "next/navigation";
+import { JWTDecode } from '@/lib/fetcher';
 
 export default function LayoutDashboard({ children }) {
-    const [sidebarActive, setSidebarActive] = useState(() => {
-        if (typeof window === "undefined") return false;
-        return window.innerWidth > 800;
+    const [sidebarActive, setSidebarActive] = useState(false);
+    const [user, setUser] = useState({
+        username: "John Doe",
+        email: "",
+        role: "Administrator",
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John"
     });
     const refSidebar = useRef(null);
     const router = useRouter();
@@ -39,7 +43,19 @@ export default function LayoutDashboard({ children }) {
             console.error(err);
         }
     }
+    async function getUser() {
+        try {
+            const res = await JWTDecode();
+            if (res) {
+                setUser(res);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
     useEffect(() => {
+        setSidebarActive(window.innerWidth > 800);
+        getUser();
         window.addEventListener("resize", handleResize);
         document.addEventListener("mousedown", handleClick);
         return () => {
@@ -49,9 +65,9 @@ export default function LayoutDashboard({ children }) {
     }, []);
     return (
         <>
-            <Sidebar sidebarActive={sidebarActive} actionSidebar={handleSidebar} refSidebar={refSidebar} handleLogout={handleLogout} />
+            <Sidebar user={user} sidebarActive={sidebarActive} actionSidebar={handleSidebar} refSidebar={refSidebar} handleLogout={handleLogout} />
             <div className={`transition-all duration-200 grid grid-cols-1 bg-gray-50 ${sidebarActive ? window.innerWidth > 800 ? 'ml-[270px]' : 'ml-0' : 'ml-0'}`}>
-                <Header sidebarActive={sidebarActive} actionSidebar={handleSidebar} handleLogout={handleLogout} />
+                <Header user={user} sidebarActive={sidebarActive} actionSidebar={handleSidebar} handleLogout={handleLogout} />
                 <div className="mt-10"></div>
                 <main>{children}</main>
                 <footer></footer>

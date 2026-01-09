@@ -21,7 +21,7 @@ export default function CreateCriteria() {
     { value: 'cost', label: 'Cost' },
   ];
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -43,7 +43,7 @@ export default function CreateCriteria() {
     }
   };
 
-  const validateForm = () => {
+  function validateForm() {
     console.log(formData);
     const newErrors = {};
 
@@ -64,8 +64,9 @@ export default function CreateCriteria() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     if (!validateForm()) return console.error(errors);
+    setLoading(true);
     try {
       const res = await fetchWithAuth("/api/criterias", { method: "POST", body: JSON.stringify(formData) });
       if (res.ok) {
@@ -82,10 +83,12 @@ export default function CreateCriteria() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancel = () => {
+  function handleCancel() {
     setFormData({
       nip: '',
       name: '',
