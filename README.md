@@ -6,9 +6,9 @@ Project ini dibangun menggunakan **Next.js** sebagai framework frontend & backen
 
 * **Next.js** (App Router / Pages Router)
 * **Prisma ORM**
-* **Database**: PostgreSQL / MySQL / SQLite (sesuai konfigurasi)
+* **Database**: MySQL
 * **Node.js**
-* **TypeScript**
+* **Redux** State Management
 
 ---
 
@@ -53,7 +53,7 @@ yarn install
 Buat file `.env`:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/db_name"
+DATABASE_URL="mysql://user:password@localhost:3306/db_name"
 ```
 
 ---
@@ -70,7 +70,7 @@ npx prisma init
 
 ```prisma
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
