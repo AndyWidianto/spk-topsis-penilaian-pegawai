@@ -4,8 +4,9 @@ import { cookies } from "next/headers";
 
 export async function POST(req) {
     const body = await req.json();
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     try {
-        const { access, refresh } = await Login(body);
+        const { access, refresh } = await Login(ipAddress, body);
         const setCookies = await cookies(); 
         setCookies.set("refreshToken", refresh, {
             httpOnly: true,

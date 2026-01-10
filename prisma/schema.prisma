@@ -33,6 +33,7 @@ model Users {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt 
   notifications     Notifications[]
+  audit_logs        AuditLogs[]
   
   @@map("users")
 }
@@ -131,15 +132,45 @@ model AssessmentDetails {
   @@map("assessment_details")
 }
 
+enum TypeNotification {
+  info
+  success
+  warning
+  error
+}
+enum TargetRole {
+  super_admin
+  admin
+  all
+}
 model Notifications {
-  id          Int      @id()  @default(autoincrement())
-  user_id     Int 
+  id          Int       @id()  @default(autoincrement())
+  user_id     Int? 
   message     String
-  read        Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  read        Boolean          @default(false)
+  type        TypeNotification @default(success)
+  target_role TargetRole       @default(all)
+  action_url  String   
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
-  users       Users    @relation(fields: [user_id], references: [id])
+  users       Users?    @relation(fields: [user_id], references: [id])
 
   @@map("notifications")
+}
+
+model AuditLogs {
+  id              Int       @id()     @default(autoincrement())
+  user_id         Int
+  user_role       RoleUser
+  action          String
+  entity          String
+  entity_id       Int
+  ip_address      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users           Users    @relation(fields: [user_id], references: [id])
+
+  @@map("audit_logs")
 }

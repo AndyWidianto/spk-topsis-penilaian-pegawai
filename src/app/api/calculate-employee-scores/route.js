@@ -4,6 +4,7 @@ import { CalculateTopsisManual, CalculateTopsisOtomatis } from "@/lib/repository
 export async function POST(req) {
     const auth = await req.headers.get("authorization");
     const { priode_id } = await req.json();
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     try {
         if (!auth) {
             return Response.json({
@@ -11,7 +12,7 @@ export async function POST(req) {
             }, { status: 401 });
         }
         const token = auth.split(" ")[1];
-        const res = await CalculateTopsisManual(token, priode_id);
+        const res = await CalculateTopsisManual(token, ipAddress, priode_id);
         return Response.json({
             message: "Proses Selesai",
             data: res

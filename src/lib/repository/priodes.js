@@ -3,42 +3,60 @@ import { verifyAccessToken } from "./token.service";
 
 const prisma = new PrismaClient();
 
-export async function createPriode(token, { month, year, status }) {
+export async function createPriode(token, ip, { month, year, status }) {
     const user = verifyAccessToken(token);
     if (user.role !== "super_admin" && user.role !== "admin") {
         throw new AppError("Anda tidak diizinkan!", 403);
     }
-    return prisma.priodes.create({
-        data: {
-            month, 
-            year,
-            status
-        }
+    const priode = await prisma.priodes.create({
+        data: { month, year, status }
     });
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "CREATE",
+            entity: "priodes",
+            entity_id: priode.id,
+            ip_address: ip
+        }
+    })
+    return priode;
 }
 
 export async function getPriodes() {
     return prisma.priodes.findMany();
 }
 
-export async function deletePriode(token, id) {
+export async function deletePriode(token, ip, id) {
     const user = verifyAccessToken(token);
     if (user.role !== "super_admin" && user.role !== "admin") {
         throw new AppError("Anda tidak diizinkan!", 403);
     }
-    return prisma.priodes.delete({
+    await prisma.priodes.delete({
         where: {
             id
         }
     })
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "DELETE",
+            entity: "priodes",
+            entity_id: id,
+            ip_address: ip
+        }
+    });
+    return true;
 };
 
-export async function updatePriode(token, id, { month, year, status }) {
+export async function updatePriode(token, ip, id, { month, year, status }) {
     const user = verifyAccessToken(token);
     if (user.role !== "super_admin" && user.role !== "admin") {
         throw new AppError("Anda tidak diizinkan!", 403);
     }
-    return prisma.priodes.update({
+    const priode = await prisma.priodes.update({
         where: {
             id
         },
@@ -47,7 +65,18 @@ export async function updatePriode(token, id, { month, year, status }) {
             year,
             status
         }
+    });
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "UPDATE",
+            entity: "priodes",
+            entity_id: id,
+            ip_address: ip
+        }
     })
+    return priode;
 }
 
 export async function getPriode(id) {

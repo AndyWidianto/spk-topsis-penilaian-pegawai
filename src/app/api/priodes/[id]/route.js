@@ -5,6 +5,7 @@ export async function POST(req, { params }) {
     const { id } = await params;
     const body = await req.json();
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     if (!auth) {
         return Response.json({
             message: "Unathorization"
@@ -12,7 +13,7 @@ export async function POST(req, { params }) {
     }
     try {
         const token = auth.split(" ")[1];
-        const priode = await updatePriode(token, Number(id), body);
+        const priode = await updatePriode(token, ipAddress, Number(id), body);
         return Response.json(priode);
     } catch (err) {
         console.error(err);
@@ -23,6 +24,7 @@ export async function POST(req, { params }) {
 export async function DELETE(req, { params }) {
     const { id } = await params;
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     if (!auth) {
         return Response.json({
             message: "Unathorization"
@@ -30,7 +32,7 @@ export async function DELETE(req, { params }) {
     }
     try {
         const token = auth.split(" ")[1];
-        await deletePriode(token, Number(id));
+        await deletePriode(token, ipAddress, Number(id));
         return Response.json({
             message: "Berhasil delete"
         });

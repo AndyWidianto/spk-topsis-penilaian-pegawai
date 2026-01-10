@@ -42,7 +42,7 @@ export async function CalculateTopsisOtomatis(month, year) {
         alternatives.forEach(alt => {
             alt.detail.forEach(detail => {
                 if (item.id === detail.criteria_id) {
-                    sumKuadrat[item.id] = (sumKuadrat[item.id] || 0) + detail.nilai**2;
+                    sumKuadrat[item.id] = (sumKuadrat[item.id] || 0) + detail.nilai ** 2;
                 }
             })
         });
@@ -64,7 +64,7 @@ export async function CalculateTopsisOtomatis(month, year) {
                     worstValue[criteria.id] = Math.min(worstValue[criteria.id] ?? total, total);
                 } else {
                     bestValue[criteria.id] = Math.min(bestValue[criteria.id] ?? total, total);
-                    worstValue[criteria.id] = Math.max(worstValue[criteria.id] ?? total, total);  
+                    worstValue[criteria.id] = Math.max(worstValue[criteria.id] ?? total, total);
                 }
                 details.push({ ...detail, total: total });
             }
@@ -77,8 +77,8 @@ export async function CalculateTopsisOtomatis(month, year) {
         let distancePlus = 0;
         let distanceMin = 0;
         nms.details.forEach(detail => {
-            distancePlus += (detail.total - bestValue[detail.criteria_id])**2;
-            distanceMin += (detail.total - worstValue[detail.criteria_id])**2;
+            distancePlus += (detail.total - bestValue[detail.criteria_id]) ** 2;
+            distanceMin += (detail.total - worstValue[detail.criteria_id]) ** 2;
         });
         distances.push({ id: nms.id, name: nms.name, distance_plus: distancePlus, distance_min: distanceMin });
     })
@@ -127,10 +127,20 @@ export async function CalculateTopsisOtomatis(month, year) {
             data: { month, year, status: "active" }
         });
     }
-return { priode, criterias };
+    await prisma.notifications.create({
+        data: {
+            user_id: null,
+            target_role: "all",
+            message: "Perhitungan SPK berhasil dijalankan secara otomatis",
+            is_read: false,
+            type: "success",
+            action_url: "/dashboard/topsis-calculate",
+        }
+    })
+    return { priode, criterias };
 }
 
-export async function CalculateTopsisManual(token, id) {
+export async function CalculateTopsisManual(token, ip, id) {
     const user = verifyAccessToken(token);
     if (user.role !== "super_admin" && user.role !== "admin") {
         throw new AppError("Anda tidak dizinkan untuk melakukan proses perhitungan!", 403);
@@ -178,7 +188,7 @@ export async function CalculateTopsisManual(token, id) {
         alternatives.forEach(alt => {
             alt.detail.forEach(detail => {
                 if (item.id === detail.criteria_id) {
-                    sumKuadrat[item.id] = (sumKuadrat[item.id] || 0) + detail.nilai**2;
+                    sumKuadrat[item.id] = (sumKuadrat[item.id] || 0) + detail.nilai ** 2;
                 }
             })
         });
@@ -196,13 +206,13 @@ export async function CalculateTopsisManual(token, id) {
             const criteria = totalNilaiCriterias.find(c => c.id === detail.criteria_id);
             if (criteria) {
                 totalR = (detail.nilai / criteria.total);
-                total =  (detail.nilai / criteria.total) * criteria.weight;
+                total = (detail.nilai / criteria.total) * criteria.weight;
                 if (criteria.type === "benefit") {
                     bestValue[criteria.id] = Math.max(bestValue[criteria.id] ?? total, total);
                     worstValue[criteria.id] = Math.min(worstValue[criteria.id] ?? total, total);
                 } else {
                     bestValue[criteria.id] = Math.min(bestValue[criteria.id] ?? total, total);
-                    worstValue[criteria.id] = Math.max(worstValue[criteria.id] ?? total, total);  
+                    worstValue[criteria.id] = Math.max(worstValue[criteria.id] ?? total, total);
                 }
                 details.push({ ...detail, total_r: totalR, total: total });
             }
@@ -215,8 +225,8 @@ export async function CalculateTopsisManual(token, id) {
         let distancePlus = 0;
         let distanceMin = 0;
         nms.details.forEach(detail => {
-            distancePlus += (detail.total - bestValue[detail.criteria_id])**2;
-            distanceMin += (detail.total - worstValue[detail.criteria_id])**2;
+            distancePlus += (detail.total - bestValue[detail.criteria_id]) ** 2;
+            distanceMin += (detail.total - worstValue[detail.criteria_id]) ** 2;
         });
         distances.push({ id: nms.id, name: nms.name, distance_plus: distancePlus, distance_min: distanceMin });
     })
@@ -267,5 +277,24 @@ export async function CalculateTopsisManual(token, id) {
             data: { month, year, status: "active" }
         });
     }
+    await prisma.auditLogs.create({
+        data: {
+            user_id: user.id,
+            user_role: user.role,
+            action: "CALCULATE",
+            entity: "topsis calculate",
+            entity_id: priode.id,
+            ip_address: ip
+        }
+    })
+    await prisma.notifications.create({
+        data: {
+            user_id: user.id,
+            message: "Berhasil melakukan perhitungan SPK",
+            read: false,
+            type: "success",
+            action_url: `/dashboard/topsis-calculate`,
+        }
+    })
     return { criterias, priode };
 }

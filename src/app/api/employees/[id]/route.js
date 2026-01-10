@@ -16,6 +16,7 @@ export async function POST(req, { params }) {
     const { id } = await params;
     const body = await req.json();
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     if (!auth) {
         return Response.json({
             message: "Unathorization"
@@ -23,7 +24,7 @@ export async function POST(req, { params }) {
     }
     try {
         const token = auth.split(" ")[1];
-        const employee = await updateEmployee(token, parseInt(id), body);
+        const employee = await updateEmployee(token, ipAddress, parseInt(id), body);
         return Response.json(employee);
     } catch (err) {
         console.error(err);
@@ -34,6 +35,7 @@ export async function POST(req, { params }) {
 export async function DELETE(req, { params }) {
     const { id } = await params;
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     if (!auth) {
         return Response.json({
             message: "Unathorization"
@@ -41,7 +43,7 @@ export async function DELETE(req, { params }) {
     }
     try {
         const token = auth.split(" ")[1];
-        await deleteEmployee(token, parseInt(id));
+        await deleteEmployee(token, ipAddress, parseInt(id));
         return Response.json({
             message: "Berhasil mengapus employee"
         })

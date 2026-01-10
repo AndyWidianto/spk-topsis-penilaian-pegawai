@@ -30,11 +30,11 @@ export default function Sidebar({ sidebarActive, refSidebar, handleLogout, user 
         <div ref={refSidebar} className={`fixed m-1 h-screen bg-gray-900 rounded-md overflow-hidden transition-all duration-300 ease text-white z-50 ${sidebarActive ? 'w-[270px]' : 'w-0'}`}>
             <div className="grid grid-cols-1 grid-rows-5 h-full pt-2">
                 <div className="relative p-2 row-span-5">
-                    <div className="absolute top-0 flex items-center w-full py-2 gap-2 bg-gray-800 border-b border-gray-600">
-                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQX0pWSh3K9Ib9VoX64vTM_Pbu4GW0SYYoU1g&s" alt="" className="w-[50px] h-[50px] rounded-md bg-white" />
+                    <div className="absolute top-0 flex items-center w-full py-2 gap-2 border-b border-gray-600">
+                        <img src="/images/default_icon.png" alt="default icon" className="w-[50px] h-[50px] rounded-md bg-white" />
                         <div>
-                            <h2 className="p-0 m-0 text-xl">Perusahaan</h2>
-                            <p className="text-sm">Lorem ipsum dolor</p>
+                            <h2 className="p-0 m-0 text-xl">TOPSIS</h2>
+                            <p className="text-sm">Employee Evaluation System</p>
                         </div>
                     </div>
                     <div className="w-full h-[70px]"></div>

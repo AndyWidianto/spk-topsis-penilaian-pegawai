@@ -24,7 +24,6 @@ export default function UpdateCriteria({ data, id, cancel }) {
     ];
     function handleChange(e) {
         const { name, value } = e.target;
-        console.log("ini namanya: ", name, "ini valuenya: ", value);
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -78,22 +77,27 @@ export default function UpdateCriteria({ data, id, cancel }) {
     };
     async function handleSubmit() {
         if (!validateForm()) return console.error(errors);
+        setLoading(true);
         try {
 
             const res = await fetchWithAuth(`/api/criterias/${id}`, { method: "POST", body: JSON.stringify(formData) });
-            const resJson = await res.json();
-            alert('Data karyawan berhasil disimpan!');
-            setFormData({
-                code: '',
-                name: '',
-                type: '',
-                weight: 0,
-                description: '',
-            });
-            dispatch(updateCriteria(resJson));
-            cancel();
+            if (res.ok) {
+                const resJson = await res.json();
+                alert('Data karyawan berhasil disimpan!');
+                setFormData({
+                    code: '',
+                    name: '',
+                    type: '',
+                    weight: 0,
+                    description: '',
+                });
+                dispatch(updateCriteria(resJson));
+                cancel();
+            }
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 

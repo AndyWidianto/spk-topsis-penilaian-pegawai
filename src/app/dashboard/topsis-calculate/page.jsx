@@ -203,11 +203,15 @@ const TOPSISCalculator = () => {
   }, [assessments]);
   useEffect(() => {
     getUser();
+    document.documentElement.classList.toggle("no-scroll", loading);
+    return () => document.documentElement.classList.remove("no-scroll");
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
-      <div className={`${loading ? 'fixed bg-gray-100 h-full -w-full' : ''}`}></div>
+      {loading && <div className="flex items-center justify-center fixed bg-black/60 h-full w-[calc(100%-270px)] left-[270px]">
+        <div className='h-10 w-10 rounded-full border-4 border-gray-300 border-t-blue-600 animate-spin'></div>
+      </div>}
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 mt-10">

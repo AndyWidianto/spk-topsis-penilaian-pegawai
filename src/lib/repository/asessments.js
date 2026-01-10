@@ -4,7 +4,7 @@ import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();
 
-export async function createAsessment(token, { employee_id, priode_id, total_value, ranking, assessment_details }) {
+export async function createAsessment(token, ip, { employee_id, priode_id, total_value, ranking, assessment_details }) {
     const user = verifyAccessToken(token);
     if (user.role !== "super_admin" && user.role !== "admin") {
         throw new AppError("Anda tidak diizinkan!", 403);
@@ -32,6 +32,16 @@ export async function createAsessment(token, { employee_id, priode_id, total_val
             })
         )
     );
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "CREATE",
+            entity: "assessments",
+            entity_id: newAsessment.id,
+            ip_address: ip
+        }
+    })
 
     return { ...newAsessment, assessment_details: assessmentDetails };
 }
@@ -46,16 +56,35 @@ export async function getAsessments() {
     });
 }
 
-export async function deleteAsessment(token, id) {
-    verifyAccessToken(token);
-    return prisma.assessments.delete({
+export async function deleteAsessment(token, ip, id) {
+    const user = verifyAccessToken(token);
+    if (user.role !== "super_admin" && user.role !== "admin") {
+        throw new AppError("Anda tidak diizinkan!", 403);
+    }
+    await prisma.assessmentDetails.delete({
+        where: {
+            assessment_id: id
+        }
+    });
+    await prisma.assessments.delete({
         where: {
             id
         }
+    });
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "DELETE",
+            entity: "assessments",
+            entity_id: id,
+            ip_address: ip
+        }
     })
+    return true;
 }
 
-export async function updateAsessment(token, id, { employee_id, priode_id, total_value, ranking, assessment_details}) {
+export async function updateAsessment(token, ip, id, { employee_id, priode_id, total_value, ranking, assessment_details }) {
     const user = verifyAccessToken(token);
     if (user.role !== "super_admin" && user.role !== "admin") {
         throw new AppError("Anda tidak diizinkan!", 403);
@@ -77,7 +106,8 @@ export async function updateAsessment(token, id, { employee_id, priode_id, total
     });
     const assessmentDetails = await prisma.$transaction(
         assessment_details.map((item) =>
-            prisma.assessmentDetails.create({
+            prisma.assessmentDetails.update({
+                where: { id: item.id },
                 data: {
                     criteria_id: Number(item.id),
                     assessment_id: newAssessment.id,
@@ -86,5 +116,15 @@ export async function updateAsessment(token, id, { employee_id, priode_id, total
             })
         )
     );
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "UPDATE",
+            entity: "assessments",
+            entity_id: id,
+            ip_address: ip
+        }
+    })
     return { ...newAssessment, assessment_details: assessmentDetails };
 }

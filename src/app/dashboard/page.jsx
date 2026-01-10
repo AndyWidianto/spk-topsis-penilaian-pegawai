@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Target, Award, FileText, Calculator, Settings, Database } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Dashboard() {
   const [selectedAlternative, setSelectedAlternative] = useState(null);
   const [alternatives, setAlternatives] = useState([]);
   const [stats, setStats] = useState([]);
+  const [priode, setPriode] = useState(null);
 
 
   const chartData = alternatives.map(alt => ({
@@ -15,10 +17,22 @@ export default function Dashboard() {
   }));
 
   const quickMenuItems = [
-    { icon: Calculator, label: 'Hitung TOPSIS', color: 'bg-blue-600 hover:bg-blue-700' },
-    { icon: Database, label: 'Data Master', color: 'bg-emerald-600 hover:bg-emerald-700' },
-    { icon: Settings, label: 'Pengaturan', color: 'bg-gray-600 hover:bg-gray-700' },
+    { icon: Calculator, label: 'Hitung TOPSIS', url: "/dashboard/topsis-calculate", color: 'bg-blue-600 hover:bg-blue-700' },
+    { icon: Database, label: 'Data Master', url: "/dashboard/assessments", color: 'bg-emerald-600 hover:bg-emerald-700' },
+    { icon: Settings, label: 'Pengaturan', url: "/dashboard/pengaturan", color: 'bg-gray-600 hover:bg-gray-700' },
   ];
+
+  function formatted(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Jakarta"
+    })
+  }
 
   useEffect(() => {
     async function getDashbord() {
@@ -27,6 +41,7 @@ export default function Dashboard() {
         if (res.ok) {
           const resJson = await res.json();
           const bestRanking = resJson.assessments?.find(a => a.ranking === 1);
+          setPriode(resJson);
           setAlternatives(resJson.assessments ?? []);
           setStats([
             {
@@ -210,11 +225,11 @@ export default function Dashboard() {
                   Riwayat Perhitungan
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Terakhir diperbarui: 16 Desember 2025, 14:30 WIB
+                  Terakhir diperbarui: {formatted(priode?.updatedAt)} WIB
                 </p>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                <Link href="/dashboard/topsis-calculate" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                   Lihat Detail →
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -224,13 +239,13 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Menu Cepat</h3>
             <div className="flex flex-wrap gap-3">
               {quickMenuItems.map((item, index) => (
-                <button
+                <Link href={item.url}
                   key={index}
                   className={`${item.color} text-white px-6 py-3 rounded-full font-medium text-sm flex items-center gap-2 transition-all hover:shadow-md transform hover:-translate-y-0.5`}
                 >
                   <item.icon className="w-4 h-4" />
                   {item.label}
-                </button>
+                </Link>
               ))}
             </div>
           </div>

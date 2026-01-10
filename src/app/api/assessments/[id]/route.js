@@ -5,10 +5,10 @@ export async function POST(req, { params }) {
     const body = await req.json();
     const { id } = await params;
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     try {
-        console.log("Authorizatio: ", auth);
         const token = auth.split(" ")[1];
-        const assessment = await updateAsessment(token, parseInt(id), body);
+        const assessment = await updateAsessment(token, ipAddress, parseInt(id), body);
         return Response.json(assessment);
     } catch (err) {
         console.error(err);
@@ -19,11 +19,12 @@ export async function POST(req, { params }) {
 export async function DELETE(req, { params }) {
     const { id } = await params;
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     try {
         const token = auth.split(" ")[1];
-        await deleteAsessment(token, parseInt(id));
+        await deleteAsessment(token, ipAddress, parseInt(id));
         return Response.json({
-            message: "Berhasil delete"
+            message: "Successfully delete assessments"
         })
     } catch (err) {
         console.error(err);

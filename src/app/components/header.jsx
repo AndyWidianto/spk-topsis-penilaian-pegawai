@@ -14,29 +14,51 @@ import {
 } from 'lucide-react';
 import { useSelector } from "react-redux";
 import Link from 'next/link';
+import { fetchWithAuth } from '@/lib/fetcher';
 
 
 export default function Header({ sidebarActive, actionSidebar, handleLogout, user }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [query, setQuery] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [size, setSize] = useState(800);
   const sidebars = useSelector((state) => state.sidebar.sidebars);
   const filteredSidebars = sidebars.filter(sb => sb.name.toLowerCase().includes(query ? query.toLowerCase() : ''));
+  const [notifications, setNotifications] = useState([]);
 
   // Notifikasi simulasi
-  const notifications = [
-    { id: 1, message: "Pesanan baru diterima", time: "5 menit lalu", read: false },
-    { id: 2, message: "Pembaruan sistem selesai", time: "1 jam lalu", read: true },
-    { id: 3, message: "Laporan bulanan siap", time: "2 hari lalu", read: true },
-  ];
+  // const notifications = [
+  //   { id: 1, message: "Pesanan baru diterima", time: "5 menit lalu", read: false },
+  //   { id: 2, message: "Pembaruan sistem selesai", time: "1 jam lalu", read: true },
+  //   { id: 3, message: "Laporan bulanan siap", time: "2 hari lalu", read: true },
+  // ];
   function handleChange(e) {
     const value = e.target.value;
     if (!value.trim()) return setQuery(null);
     setQuery(value);
   }
   const unreadCount = notifications.filter(n => !n.read).length;
-
+  function handleResize() {
+    setSize(window.innerWidth);
+  }
+  async function getNotifications() {
+    try {
+      const res = await fetchWithAuth("/api/notifications?limit=4");
+      if (res.ok) {
+        const resJson = await res.json();
+        console.log(resJson);
+        setNotifications(resJson);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  useEffect(() => {
+    getNotifications();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <header className={`fixed top-0 z-40 transition-all duration-200 ${sidebarActive ? window.innerWidth > 800 ? 'w-[calc(100%-280px)] left-[280px]' : 'w-full left-0' : 'w-full left-0'} border-b ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
       <div className="pl-2 pr-4 sm:pr-6 lg:pr-8">
@@ -56,6 +78,9 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
           <div className="flex items-center space-x-4">
 
             {/* Pencarian */}
+            {size < 500 && <button className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
+                <Search size={20} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+              </button>}
             <div className="hidden md:block relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
@@ -97,7 +122,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
             <div className="relative">
               <button
                 className={`p-2 rounded-full relative ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-                onClick={() => setIsProfileOpen(false)}
+                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
               >
                 <Bell size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
                 {unreadCount > 0 && (
@@ -108,7 +133,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
               </button>
 
               {/* Dropdown Notifikasi */}
-              <div className={`absolute right-0 mt-2 w-80 origin-top-right rounded-md shadow-lg py-1 ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} hidden group-hover:block`}>
+              <div className={`absolute right-0 mt-2 w-80 origin-top-right rounded-md shadow-lg py-1 ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} ${isNotificationOpen ? 'block' : 'hidden'} group-hover:block`}>
                 <div className={`px-4 py-2 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Notifikasi</p>
                 </div>
@@ -120,7 +145,10 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                     >
                       <div className="flex items-start">
                         <div className="ml-3">
-                          <p className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{notification.message}</p>
+                          <p className={`flex gap-2 text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                            {`${notification.users.username} ${notification.message}`} 
+                            <span className={`block rounded-full ${notification.type === "success" ? 'bg-green-200 text-green-600' : 'bg-gray-200 text-gray-600'}`}>{notification.type}</span>
+                          </p>
                           <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{notification.time}</p>
                         </div>
                         {!notification.read && (
@@ -178,12 +206,12 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                     <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{user.username}</p>
                     <p className="text-xs text-gray-500 truncate">{user.role}</p>
                   </div>
-                  <a href="#" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
+                  <Link href="/dashboard/profile" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <User size={16} className="inline mr-2" /> Profil Saya
-                  </a>
-                  <a href="#" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
+                  </Link>
+                  <Link href="/dashboard/settings" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <Settings size={16} className="inline mr-2" /> Pengaturan
-                  </a>
+                  </Link>
                   <div className={`border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}></div>
                   <button onClick={() => handleLogout()} className={`block px-4 py-2 w-full h-full text-start text-sm ${isDarkMode ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'}`}>
                     Logout
@@ -193,32 +221,6 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
             </div>
           </div>
         </div>
-
-        {/* Menu Mobile */}
-        {isMenuOpen && (
-          <div className={`md:hidden pb-4 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <div className="flex flex-col space-y-3 mt-2">
-              <a href="#" className={`font-medium px-3 py-2 rounded-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>Overview</a>
-              <a href="#" className={`font-medium px-3 py-2 rounded-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>Analytics</a>
-              <a href="#" className={`font-medium px-3 py-2 rounded-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>Reports</a>
-              <a href="#" className={`font-medium px-3 py-2 rounded-lg ${isDarkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100'}`}>Settings</a>
-
-              {/* Pencarian Mobile */}
-              <div className="px-3 pt-2">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Cari..."
-                    className={`w-full pl-10 pr-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

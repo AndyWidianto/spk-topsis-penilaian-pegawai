@@ -4,6 +4,7 @@ import { CreateEmployee, GetEmployees } from "@/lib/repository/employee";
 export async function POST(req) {
     const body = await req.json();
     const auth = await req.headers.get("authorization");
+    const ipAddress = await req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     if (!auth) {
         return Response.json({
             message: "Unathorization"
@@ -11,7 +12,7 @@ export async function POST(req) {
     }
     try {
         const token = auth.split(" ")[1];
-        const employee = await CreateEmployee(token, body);
+        const employee = await CreateEmployee(token, ipAddress, body);
         return Response.json(employee);
     } catch (err) {
         console.error(err);

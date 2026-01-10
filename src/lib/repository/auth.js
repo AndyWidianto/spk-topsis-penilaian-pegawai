@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 const salt = 10;
 
-export async function Login({ email, password }) {
+export async function Login(ip, { email, password }) {
     if (!email.trim()) {
         throw new AppError("username atau email tidak boleh kosong", 404);
     }
@@ -36,10 +36,20 @@ export async function Login({ email, password }) {
         },
         data: { refresh_token: refresh },
     });
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "LOGIN",
+            entity: "auth",
+            entity_id: user.id,
+            ip_address: ip
+        }
+    })
     return { access, refresh };
 }
 
-export async function Register({ username, email, password }) {
+export async function Register(ip, { username, email, password }) {
     if (!username.trim() || !email.trim()) {
         throw new AppError("Username atau Email tidak boleh kosong", 404);
     }
@@ -63,6 +73,16 @@ export async function Register({ username, email, password }) {
         },
         data: { refresh_token: refresh },
     });
+    await prisma.auditLogs.create({
+        data: { 
+            user_id: user.id, 
+            user_role: user.role, 
+            action: "REGISTER",
+            entity: "auth",
+            entity_id: id,
+            ip_address: ip
+        }
+    })
     return { refresh, access };
 }
 
@@ -72,8 +92,6 @@ export async function RefreshToken(refresh) {
     }
     const verfiyToken = verifyRefreshToken(refresh);
     const user = await prisma.users.findFirst({ where: { id: verfiyToken.id }});
-    console.log("user Token: ", user);
-    console.log("Token: ", refresh);
     if (user.refresh_token !== refresh) {
         throw new AppError("Refresh Token tidak cocok", 403);
     }

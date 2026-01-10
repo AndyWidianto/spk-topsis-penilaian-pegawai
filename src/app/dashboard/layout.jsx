@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { fetchWithAuth } from "@/lib/fetcher";
 import { useRouter } from "next/navigation";
 import { JWTDecode } from '@/lib/fetcher';
+import Footer from "../components/footer";
 
 export default function LayoutDashboard({ children }) {
     const [sidebarActive, setSidebarActive] = useState(false);
@@ -70,7 +71,7 @@ export default function LayoutDashboard({ children }) {
                 <Header user={user} sidebarActive={sidebarActive} actionSidebar={handleSidebar} handleLogout={handleLogout} />
                 <div className="mt-10"></div>
                 <main>{children}</main>
-                <footer></footer>
+                <Footer/>
             </div>
         </>
     )
