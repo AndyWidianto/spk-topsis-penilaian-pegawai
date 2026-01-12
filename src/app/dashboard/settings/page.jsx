@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {  Settings as SettingsIcon, User, Shield, Bell, Globe, Palette, Save, Key, Info, Moon, Sun, Mail, Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import { fetchWithAuth, JWTDecode } from '@/lib/fetcher';
 
 const Settings = () => {
   // State untuk Pengaturan Akun
   const [accountData, setAccountData] = useState({
-    fullName: 'Ahmad Rizki',
+    full_name: 'Ahmad Rizki',
     username: 'ahmad.rizki',
     email: 'ahmad.rizki@example.com'
   });
@@ -25,17 +26,16 @@ const Settings = () => {
     notifications: true,
     autoSave: false
   });
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  // Data Informasi Sistem
   const systemInfo = {
-    version: 'v2.1.0',
-    spkMethod: 'TOPSIS & AHP',
-    lastUpdate: '15 Desember 2023',
-    developedBy: 'Tim SPK'
+    version: 'v1.1.0',
+    spkMethod: 'TOPSIS',
+    lastUpdate: '12 Januari 2026',
+    developedBy: 'Andy Widianto'
   };
 
-  // Handler untuk Pengaturan Akun
-  const handleAccountChange = (e) => {
+  function handleAccountChange(e) {
     const { name, value } = e.target;
     setAccountData(prev => ({
       ...prev,
@@ -44,7 +44,7 @@ const Settings = () => {
   };
 
   // Handler untuk Keamanan
-  const handleSecurityChange = (e) => {
+  function handleSecurityChange(e) {
     const { name, value } = e.target;
     setSecurityData(prev => ({
       ...prev,
@@ -85,19 +85,43 @@ const Settings = () => {
   };
 
   // Handler untuk Simpan Perubahan Akun
-  const handleSaveAccount = (e) => {
+  async function handleSaveAccount(e) {
     e.preventDefault();
-    // Simulasi penyimpanan
+    try {
+      const res = await fetchWithAuth("/api/profile", { method: "POST", body: JSON.stringify(accountData) });
+      if (res.ok) {
+        const resJson = await res.json();
+        localStorage.setItem("accessToken", resJson.accessToken);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat perubahan!");
+    }
     alert('Perubahan akun berhasil disimpan!');
   };
 
   // Handler untuk Toggle
-  const togglePreference = (key) => {
+  function togglePreference(key) {
     setPreferences(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
   };
+
+  async function getUser() {
+    try {
+      const res = await JWTDecode();
+      if (res) {
+        setAccountData(res);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    getUser();
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -134,8 +158,8 @@ const Settings = () => {
                     </label>
                     <input
                       type="text"
-                      name="fullName"
-                      value={accountData.fullName}
+                      name="full_name"
+                      value={accountData.full_name ?? ''}
                       onChange={handleAccountChange}
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
                       placeholder="Masukkan nama lengkap"
@@ -177,10 +201,15 @@ const Settings = () => {
                 <div className="mt-6 pt-6 border-t border-gray-100">
                   <button
                     type="submit"
-                    className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-200"
+                    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 py-2.5 px-6 rounded-lg transition duration-200"
                   >
+                  {loadingProfile ? <div className='flex items-center gap-2'>
+                    <div className="border-2 rounded-full w-6 h-6 animate-spin border-t-blue-600 border-r-blue-600"></div>
+                    Processing
+                  </div> : <div className="flex items-center gap-2 text-white font-medium">
                     <Save className="w-5 h-5" />
                     Simpan Perubahan
+                  </div>}
                   </button>
                 </div>
               </form>
@@ -275,7 +304,7 @@ const Settings = () => {
           {/* Kolom Kanan - Preferensi & Informasi Sistem */}
           <div className="space-y-6">
             {/* Section: Preferensi Sistem */}
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            {/* <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="border-b border-gray-100 px-6 py-4">
                 <div className="flex items-center">
                   <Palette className="w-5 h-5 text-gray-500 mr-3" />
@@ -287,7 +316,6 @@ const Settings = () => {
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Tema */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     {preferences.theme === 'light' ? (
@@ -324,7 +352,6 @@ const Settings = () => {
                   </div>
                 </div>
 
-                {/* Bahasa */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Globe className="w-5 h-5 text-gray-500 mr-3" />
@@ -343,7 +370,6 @@ const Settings = () => {
                   </select>
                 </div>
 
-                {/* Notifikasi */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Bell className="w-5 h-5 text-gray-500 mr-3" />
@@ -366,7 +392,6 @@ const Settings = () => {
                   </button>
                 </div>
 
-                {/* Auto Save */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Save className="w-5 h-5 text-gray-500 mr-3" />
@@ -389,7 +414,7 @@ const Settings = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Section: Informasi Sistem */}
             <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl shadow-md overflow-hidden border border-indigo-100">

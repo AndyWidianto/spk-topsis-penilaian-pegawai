@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Bell,
   Search,
@@ -10,7 +10,8 @@ import {
   HelpCircle,
   ChevronDown,
   Sun,
-  Moon
+  Moon,
+  Info
 } from 'lucide-react';
 import { useSelector } from "react-redux";
 import Link from 'next/link';
@@ -22,17 +23,14 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [query, setQuery] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [size, setSize] = useState(800);
   const sidebars = useSelector((state) => state.sidebar.sidebars);
   const filteredSidebars = sidebars.filter(sb => sb.name.toLowerCase().includes(query ? query.toLowerCase() : ''));
   const [notifications, setNotifications] = useState([]);
 
-  // Notifikasi simulasi
-  // const notifications = [
-  //   { id: 1, message: "Pesanan baru diterima", time: "5 menit lalu", read: false },
-  //   { id: 2, message: "Pembaruan sistem selesai", time: "1 jam lalu", read: true },
-  //   { id: 3, message: "Laporan bulanan siap", time: "2 hari lalu", read: true },
-  // ];
+  const dropdownHelpRef = useRef(null);
+
   function handleChange(e) {
     const value = e.target.value;
     if (!value.trim()) return setQuery(null);
@@ -54,11 +52,32 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
       console.error(err);
     }
   }
+    const handleClickOutside = (event) => {
+      if (dropdownHelpRef.current && !dropdownHelpRef.current.contains(event.target)) {
+        setIsHelpOpen(false);
+      }
+    };
   useEffect(() => {
     getNotifications();
+    document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
   }, []);
+
+  // Get access level info based on role
+  const getAccessInfo = (role) => {
+    const accessMap = {
+      'super_admin': { level: 'Full Access', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
+      'admin': { level: 'Manage Data', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
+      'user': { level: 'Read Only', bgColor: 'bg-gray-100', textColor: 'text-gray-700' }
+    };
+    return accessMap[role] || accessMap['user'];
+  };
+
+  const accessInfo = getAccessInfo(user?.role);
   return (
     <header className={`fixed top-0 z-40 transition-all duration-200 ${sidebarActive ? window.innerWidth > 800 ? 'w-[calc(100%-280px)] left-[280px]' : 'w-full left-0' : 'w-full left-0'} border-b ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
       <div className="pl-2 pr-4 sm:pr-6 lg:pr-8">
@@ -79,8 +98,8 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
 
             {/* Pencarian */}
             {size < 500 && <button className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
-                <Search size={20} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-              </button>}
+              <Search size={20} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+            </button>}
             <div className="hidden md:block relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
@@ -146,7 +165,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                       <div className="flex items-start">
                         <div className="ml-3">
                           <p className={`flex gap-2 text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                            {`${notification.users.username} ${notification.message}`} 
+                            {`${notification.users.username} ${notification.message}`}
                             <span className={`block rounded-full ${notification.type === "success" ? 'bg-green-200 text-green-600' : 'bg-gray-200 text-gray-600'}`}>{notification.type}</span>
                           </p>
                           <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{notification.time}</p>
@@ -169,9 +188,59 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
             </div>
 
             {/* Bantuan */}
-            <button className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
-              <HelpCircle size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
-            </button>
+            <div className="relative" ref={dropdownHelpRef}>
+              <button onClick={() => setIsHelpOpen(!isHelpOpen)} className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}>
+                <HelpCircle size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
+              </button>
+              {isHelpOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg z-50">
+                  <div className="p-5">
+                    {/* Header Section */}
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="">
+                        <div className="w-full flex items-center gap-2">
+                          <div className="bg-blue-100 rounded-lg flex items-center justify-center p-2">
+                            <Info className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            Tentang Sistem
+                          </h3>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          Sistem Pendukung Keputusan ini dirancang untuk membantu Anda dalam menganalisis data dan membuat keputusan yang lebih baik berdasarkan informasi yang tersedia.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-200 my-4"></div>
+
+                    {/* Access Rights Section */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                        Hak Akses Anda
+                      </h4>
+
+                      <div className="space-y-2">
+                        {/* User Role */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Role:</span>
+                          <span className="text-sm font-medium text-gray-900">{user?.role === "super_admin" ? "Manager" : user?.role === "admin" ? "Admin" : "User"}</span>
+                        </div>
+
+                        {/* Access Level Badge */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Tingkat Akses:</span>
+                          <span className={`text-xs font-medium px-3 py-1 rounded-full ${accessInfo.bgColor} ${accessInfo.textColor}`}>
+                            {accessInfo.level}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Profil User */}
             <div className="relative">
@@ -189,8 +258,8 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                     {user.username.split('')[0].toUpperCase()}
                   </div>
                   <div className="hidden md:block ml-3 text-left">
-                    <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{user.username}</p>
-                    <p className="text-xs text-gray-500">{user.role}</p>
+                    <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{user.full_name}</p>
+                    <p className="text-xs text-gray-500">{user.role === "super_admin" ? "Manager" : user.role === "admin" ? "Admin" : "User"}</p>
                   </div>
                   <ChevronDown
                     size={16}
@@ -204,7 +273,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                 <div className={`absolute right-0 mt-2 w-48 origin-top-right rounded-md shadow-lg py-1 ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
                   <div className={`px-4 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{user.username}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.role}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.role === "super_admin" ? "Manager" : user.role === "admin" ? "Admin" : "User"}</p>
                   </div>
                   <Link href="/dashboard/profile" className={`block px-4 py-2 text-sm ${isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <User size={16} className="inline mr-2" /> Profil Saya

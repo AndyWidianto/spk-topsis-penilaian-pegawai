@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { A11y, Autoplay, Navigation, Pagination, Scrollbar } from 'swiper/modules';
+import { A11y, Autoplay, Pagination, Scrollbar } from 'swiper/modules';
+import { Lock, LockOpen } from 'lucide-react';
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [inputConfirmPasswordIsActive, setInputComfirmPasswordIsActive] = useState(false);
+  const [inputPasswordIsActive, setInputPasswordIsActive] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -62,67 +65,69 @@ export default function RegisterPage() {
 
   function handleBlur(field) {
     setTouched({ ...touched, [field]: true });
-    
+
     let newErrors = { ...errors };
-    
+
     if (field === 'password') {
+      setInputPasswordIsActive(false);
       const passwordError = validatePassword(formData.password);
       if (passwordError) newErrors.password = passwordError;
       else delete newErrors.password;
-      
+
       if (formData.confirmPassword) {
         const confirmError = validateConfirmPassword(formData.password, formData.confirmPassword);
         if (confirmError) newErrors.confirmPassword = confirmError;
         else delete newErrors.confirmPassword;
       }
     }
-    
+
     if (field === 'confirmPassword') {
+      setInputComfirmPasswordIsActive(false);
       const confirmError = validateConfirmPassword(formData.password, formData.confirmPassword);
       if (confirmError) newErrors.confirmPassword = confirmError;
       else delete newErrors.confirmPassword;
     }
-    
+
     if (field === 'email') {
       const emailError = validateEmail(formData.email);
       if (emailError) newErrors.email = emailError;
       else delete newErrors.email;
     }
-    
+
     setErrors(newErrors);
   };
 
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
+
     if (touched[name]) {
       let newErrors = { ...errors };
-      
+
       if (name === 'password') {
         const passwordError = validatePassword(value);
         if (passwordError) newErrors.password = passwordError;
         else delete newErrors.password;
-        
+
         if (formData.confirmPassword) {
           const confirmError = validateConfirmPassword(value, formData.confirmPassword);
           if (confirmError) newErrors.confirmPassword = confirmError;
           else delete newErrors.confirmPassword;
         }
       }
-      
+
       if (name === 'confirmPassword') {
         const confirmError = validateConfirmPassword(formData.password, value);
         if (confirmError) newErrors.confirmPassword = confirmError;
         else delete newErrors.confirmPassword;
       }
-      
+
       if (name === 'email') {
         const emailError = validateEmail(value);
         if (emailError) newErrors.email = emailError;
         else delete newErrors.email;
       }
-      
+
       setErrors(newErrors);
     }
   };
@@ -138,17 +143,17 @@ export default function RegisterPage() {
     setTouched(allTouched);
 
     const newErrors = {};
-    
+
     if (!formData.username.trim()) newErrors.username = 'Full name is required';
-    
+
     const emailError = validateEmail(formData.email);
     if (!formData.email) newErrors.email = 'Email is required';
     else if (emailError) newErrors.email = emailError;
-    
+
     const passwordError = validatePassword(formData.password);
     if (!formData.password) newErrors.password = 'Password is required';
     else if (passwordError) newErrors.password = passwordError;
-    
+
     const confirmError = validateConfirmPassword(formData.password, formData.confirmPassword);
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
     else if (confirmError) newErrors.confirmPassword = confirmError;
@@ -195,16 +200,15 @@ export default function RegisterPage() {
         <div className="flex justify-between w-[60rem] border bg-white">
           <div className="w-0 md:w-3/5 overflow-hidden h-2xl">
             <Swiper
-              modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
+              modules={[Pagination, Scrollbar, A11y, Autoplay]}
               slidesPerView={1}
               loop
-              navigation
               pagination={{ clickable: true }}
               scrollbar={{ draggable: true }}
               autoplay={{
                 delay: 3000,
                 disableOnInteraction: false,
-              }} 
+              }}
               className="w-full h-full"
             >
               {slides.map(slide => (
@@ -245,20 +249,31 @@ export default function RegisterPage() {
                 </div>
                 <div className="flex flex-col w-full mt-4">
                   <label htmlFor="password" className='text-gray-600 text-xs'>Password</label>
-                  <input type="password" name="password" id="password" onChange={handleChange} className='pb-1 border-b border-gray-600 w-full focus:outline-0 focus:border-blue-600' />
+                  <div className="relative">
+                    <input type={showPassword ? 'text' : 'password'} name="password" id="password" onChange={handleChange} onFocus={() => setInputPasswordIsActive(true)} onBlur={() => handleBlur("password")} className='pb-1 border-b border-gray-600 w-full focus:outline-0 focus:border-blue-600' />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute right-0 bottom-2 transition-all duration-300 opacity-1 ${inputPasswordIsActive ? 'block' : 'hidden'} hover:block`}>
+                      {showPassword ? <LockOpen size={18} /> : <Lock size={18} />}
+                    </button>
+                  </div>
+                  {passwordStrength && <div>password: <small className={passwordStrength.color}>{passwordStrength.text}</small></div>}
                   {errors.password && <span className="text-red-500 text-xs">{errors.password}</span>}
                 </div>
                 <div className="flex flex-col w-full mt-4">
                   <label htmlFor="confirm password" className='text-gray-600 text-xs'>Confirm Password</label>
-                  <input type="password" name="confirmPassword" id="confirmPassword" onChange={handleChange} className='pb-1 border-b border-gray-600 w-full focus:outline-0 focus:border-blue-600' />
+                  <div className="relative">
+                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" id="confirmPassword" onChange={handleChange} onFocus={() => setInputComfirmPasswordIsActive(true)} onBlur={() => handleBlur("confirmPassword")} className='pb-1 border-b border-gray-600 w-full focus:outline-0 focus:border-blue-600' />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className={`absolute right-0 bottom-2 transition-all duration-300 opacity-1 ${inputConfirmPasswordIsActive ? 'block' : 'hidden'} hover:block`}>
+                      {showConfirmPassword ? <LockOpen size={18} /> : <Lock size={18} />}
+                    </button>
+                  </div>
                   {errors.confirmPassword && <span className="text-red-500 text-xs">{errors.confirmPassword}</span>}
                 </div>
                 <div className="flex justify-center my-4 text-sm">
                   <button type="submit" className="p-2 px-12 rounded-full bg-gray-700 text-white">
                     {loading ? <div className='flex items-center gap-2'>
-                    <div className="border-2 rounded-full w-6 h-6 animate-spin border-t-blue-600 border-r-blue-600"></div>
-                    Processing
-                  </div> : 'Create Account' }
+                      <div className="border-2 rounded-full w-6 h-6 animate-spin border-t-blue-600 border-r-blue-600"></div>
+                      Processing
+                    </div> : 'Create Account'}
                   </button>
                 </div>
               </form>

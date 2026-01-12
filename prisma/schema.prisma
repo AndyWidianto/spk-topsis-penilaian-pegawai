@@ -27,6 +27,7 @@ model Users {
   username          String 
   password          String
   avatar            String?
+  full_name         String?
   refresh_token     String?  @db.Text
   role              RoleUser @default(user)
   active            Boolean  @default(true)

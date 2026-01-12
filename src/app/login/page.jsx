@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { A11y, Autoplay, Navigation, Pagination, Scrollbar } from 'swiper/modules';
+import { A11y, Autoplay, Pagination, Scrollbar } from 'swiper/modules';
+import { Lock, LockOpen } from 'lucide-react';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [inputPasswordIsActive, setInputPasswordIsActive] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -72,10 +74,9 @@ export default function LoginPage() {
           {/* slider  */}
           <div className="w-0 md:w-3/5 overflow-hidden h-2xl">
             <Swiper
-              modules={[Navigation, Pagination, Scrollbar, A11y, Autoplay]}
+              modules={[Pagination, Scrollbar, A11y, Autoplay]}
               slidesPerView={1}
               loop
-              navigation
               pagination={{ clickable: true }}
               scrollbar={{ draggable: true }}
               autoplay={{
@@ -118,7 +119,12 @@ export default function LoginPage() {
                 </div>
                 <div className="flex flex-col w-full mt-4">
                   <label htmlFor="password" className='text-gray-600 text-xs'>Password</label>
-                  <input type="password" name="password" id="password" onChange={handleChange} className='pb-1 border-b border-gray-600 w-full focus:outline-0 focus:border-blue-600' />
+                  <div className="relative">
+                    <input type={showPassword ? 'text' : 'password'} name="password" id="password" onChange={handleChange} onFocus={() => setInputPasswordIsActive(true)} onBlur={() => setInputPasswordIsActive(false)} className='pb-1 border-b border-gray-600 w-full focus:outline-0 focus:border-blue-600' />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute right-0 bottom-2 transition-all duration-300 opacity-1 ${ inputPasswordIsActive ? 'block' : 'hidden'} hover:block`}>
+                      {showPassword ? <LockOpen size={18} /> : <Lock size={18} />}
+                    </button>
+                  </div>
                 </div>
                 <div className="w-full text-end p-2">
                   <Link href="/forget-password" className='text-blue-600 text-sm'>Forget Password?</Link>
