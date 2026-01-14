@@ -42,6 +42,16 @@ export async function createAsessment(token, ip, { employee_id, priode_id, total
             ip_address: ip
         }
     })
+    await prisma.notifications.create({
+        data: {
+            user_id: user.id,
+            message: "create Assessment",
+            read: false,
+            type: "success",
+            action_url: `/dashboard/assessments?search=${criteria.code}`,
+            target_role: "admin"
+        }
+    });
 
     return { ...newAsessment, assessment_details: assessmentDetails };
 }
@@ -126,5 +136,15 @@ export async function updateAsessment(token, ip, id, { employee_id, priode_id, t
             ip_address: ip
         }
     })
+    await prisma.notifications.create({
+        data: {
+            user_id: user.id,
+            message: "update Assessment",
+            read: false,
+            type: "success",
+            action_url: `/dashboard/assessments`,
+            target_role: "admin"
+        }
+    });
     return { ...newAssessment, assessment_details: assessmentDetails };
 }

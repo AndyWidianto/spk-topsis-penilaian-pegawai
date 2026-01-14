@@ -208,10 +208,7 @@ const TOPSISCalculator = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
-      {loading && <div className="flex items-center justify-center fixed bg-black/60 h-full w-[calc(100%-270px)] left-[270px]">
-        <div className='h-10 w-10 rounded-full border-4 border-gray-300 border-t-blue-600 animate-spin'></div>
-      </div>}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-1 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 mt-10">
@@ -237,7 +234,10 @@ const TOPSISCalculator = () => {
             ))}
           </select>
         </div>
-        <div className="grid grid-cols-1 gap-6">
+        {loading && <div className="flex items-center justify-center">
+            <div className='h-10 w-10 rounded-full border-4 border-gray-300 border-t-blue-600 animate-spin'></div>
+        </div>}
+        {!loading && <div className="grid grid-cols-1 gap-6">
           <div className="lg:col-span-1 space-y-6">
             {/* Data Alternatif */}
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -321,7 +321,6 @@ const TOPSISCalculator = () => {
               </div>
             </div>
           </div>
-
           {/* Kolom Kanan: Proses Perhitungan */}
           {priode && priode.status === "finished" ? <div className="lg:col-span-2 space-y-6">
             {/* Proses 1: Matriks Keputusan */}
@@ -545,7 +544,7 @@ const TOPSISCalculator = () => {
                     Hasil Perankingan
                   </h2>
                 </div>
-                <div className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-semibold">
+                <div className="hidden sm:block px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-semibold">
                   Rekomendasi Terbaik
                 </div>
               </div>
@@ -584,7 +583,7 @@ const TOPSISCalculator = () => {
                     {item.ranking === 1 && (
                       <div className="flex items-center gap-2 text-yellow-600">
                         <CheckCircle className="w-5 h-5" />
-                        <span className="font-semibold">REKOMENDASI</span>
+                        <span className="hidden sm:block font-semibold">REKOMENDASI</span>
                       </div>
                     )}
                   </div>
@@ -614,7 +613,7 @@ const TOPSISCalculator = () => {
               </div>
             </div>
           </div> : <div className="text-center">Pada priode ini belum di latih</div>}
-        </div>
+        </div>}
       </div>
     </div>
   );

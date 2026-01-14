@@ -95,7 +95,7 @@ export async function RefreshToken(refresh) {
     if (user.refresh_token !== refresh) {
         throw new AppError("Refresh Token tidak cocok", 403);
     }
-    const access = accessToken(verfiyToken);
+    const access = accessToken(user);
     return access;
 }
 

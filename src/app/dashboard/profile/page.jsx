@@ -82,11 +82,30 @@ export default function Profile() {
     });
   }
 
+  function getAccessInfo(role) {
+    const accessMap = {
+      'super_admin': { level: 'Full Access', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
+      'admin': { level: 'Manage Data', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
+      'user': { level: 'Read Only', bgColor: 'bg-gray-100', textColor: 'text-gray-700' }
+    };
+    return accessMap[role] || accessMap['user'];
+  };
+
+  const accessInfo = getAccessInfo(user?.role);
 
   useEffect(() => {
     getProfile();
   }, [])
 
+  if (loading) {
+    return (
+      <div className='grid h-screen items-center'>
+        <div className="flex items-center justify-center w-full h-full">
+          <div className="animate-spin border-4 border-white border-t-blue-600 rounded-full w-10 h-10"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -185,6 +204,10 @@ export default function Profile() {
                   </h4>
                   <div className="space-y-4">
                     <div>
+                      <label className="block text-sm font-medium text-gray-500">Full Name</label>
+                      <p className="mt-1 text-gray-800 font-medium">{user?.full_name}</p>
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-500">Username</label>
                       <p className="mt-1 text-gray-800 font-medium">{user?.username}</p>
                     </div>
@@ -239,8 +262,9 @@ export default function Profile() {
                     <div>
                       <label className="block text-sm font-medium text-gray-500">Level Akses</label>
                       <p className="mt-1 text-gray-800 font-medium flex items-center">
-                        <Shield className="w-4 h-4 mr-2 text-gray-400" />
-                        Full Access
+                        <span className={`text-xs font-medium px-3 py-1 rounded-full ${accessInfo.bgColor} ${accessInfo.textColor}`}>
+                          {accessInfo.level}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -252,16 +276,16 @@ export default function Profile() {
                 <h4 className="text-lg font-semibold text-gray-800 mb-2">Tentang Sistem Pendukung Keputusan</h4>
                 <p className="text-gray-600">
                   {user?.role === "super_admin" ? <>
-                  Sistem ini membantu Anda dalam proses pengambilan keputusan dengan metode analisis yang terstruktur. 
-                  Sebagai <span className="font-medium">Manager</span>, Anda memiliki akses penuh untuk mengelola seluruh data sistem, termasuk pengguna, 
-                  karyawan, kriteria, dan assessment, melakukan perhitungan, serta melihat hasil analisis secara menyeluruh.</> :
-                  user?.role === "admin" ? <>Sistem ini membantu Anda dalam proses pengambilan keputusan dengan metode analisis yang terstruktur. 
-                  Sebagai <span className="font-medium">Admin</span>, Anda memiliki akses untuk mengelola data karyawan, kriteria, dan assessment, melakukan perhitungan, serta melihat 
-                  hasil analisis, namun tidak memiliki akses untuk mengelola data pengguna.</> : <>
-                  Sistem ini membantu Anda dalam proses pengambilan keputusan dengan metode analisis yang terstruktur. 
-                  Sebagai <span className="font-medium">User</span>, Anda memiliki akses untuk melihat data, proses penilaian, dan hasil analisis tanpa dapat 
-                  melakukan penambahan, perubahan, atau penghapusan data.
-                  </>}
+                    Sistem ini membantu Anda dalam proses pengambilan keputusan dengan metode analisis yang terstruktur.
+                    Sebagai <span className="font-medium">Manager</span>, Anda memiliki akses penuh untuk mengelola seluruh data sistem, termasuk pengguna,
+                    karyawan, kriteria, dan assessment, melakukan perhitungan, serta melihat hasil analisis secara menyeluruh.</> :
+                    user?.role === "admin" ? <>Sistem ini membantu Anda dalam proses pengambilan keputusan dengan metode analisis yang terstruktur.
+                      Sebagai <span className="font-medium">Admin</span>, Anda memiliki akses untuk mengelola data karyawan, kriteria, dan assessment, melakukan perhitungan, serta melihat
+                      hasil analisis, namun tidak memiliki akses untuk mengelola data pengguna.</> : <>
+                      Sistem ini membantu Anda dalam proses pengambilan keputusan dengan metode analisis yang terstruktur.
+                      Sebagai <span className="font-medium">User</span>, Anda memiliki akses untuk melihat data, proses penilaian, dan hasil analisis tanpa dapat
+                      melakukan penambahan, perubahan, atau penghapusan data.
+                    </>}
                 </p>
               </div>
 

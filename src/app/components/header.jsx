@@ -1,21 +1,10 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import {
-  Bell,
-  Search,
-  Menu,
-  X,
-  User,
-  Settings,
-  HelpCircle,
-  ChevronDown,
-  Sun,
-  Moon,
-  Info
-} from 'lucide-react';
+import { Bell, Search, Menu, X, User, Settings, HelpCircle, ChevronDown, Sun, Moon, Info } from 'lucide-react';
 import { useSelector } from "react-redux";
 import Link from 'next/link';
 import { fetchWithAuth } from '@/lib/fetcher';
+import { useRouter } from 'next/navigation';
 
 
 export default function Header({ sidebarActive, actionSidebar, handleLogout, user }) {
@@ -25,9 +14,11 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [size, setSize] = useState(800);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const sidebars = useSelector((state) => state.sidebar.sidebars);
   const filteredSidebars = sidebars.filter(sb => sb.name.toLowerCase().includes(query ? query.toLowerCase() : ''));
-  const [notifications, setNotifications] = useState([]);
+  const route = useRouter();
 
   const dropdownHelpRef = useRef(null);
 
@@ -36,7 +27,6 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
     if (!value.trim()) return setQuery(null);
     setQuery(value);
   }
-  const unreadCount = notifications.filter(n => !n.read).length;
   function handleResize() {
     setSize(window.innerWidth);
   }
@@ -45,18 +35,24 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
       const res = await fetchWithAuth("/api/notifications?limit=4");
       if (res.ok) {
         const resJson = await res.json();
-        console.log(resJson);
-        setNotifications(resJson);
+        setNotifications(resJson.notifications);
+        setUnreadCount(resJson.total_unread);
       }
     } catch (err) {
       console.error(err);
     }
   }
-    const handleClickOutside = (event) => {
-      if (dropdownHelpRef.current && !dropdownHelpRef.current.contains(event.target)) {
-        setIsHelpOpen(false);
-      }
-    };
+  function handleClickOutside(event) {
+    if (dropdownHelpRef.current && !dropdownHelpRef.current.contains(event.target)) {
+      setIsHelpOpen(false);
+    }
+  };
+  function handleNotif() {
+    if (size < 700) {
+      return route.push("/dashboard/notifications");
+    }
+    setIsNotificationOpen(!isNotificationOpen);
+  }
   useEffect(() => {
     getNotifications();
     document.addEventListener('mousedown', handleClickOutside);
@@ -97,9 +93,9 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
           <div className="flex items-center space-x-4">
 
             {/* Pencarian */}
-            {size < 500 && <button className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
+            {/* {size < 500 && <button className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full">
               <Search size={20} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
-            </button>}
+            </button>} */}
             <div className="hidden md:block relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={18} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
@@ -141,7 +137,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
             <div className="relative">
               <button
                 className={`p-2 rounded-full relative ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                onClick={handleNotif}
               >
                 <Bell size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
                 {unreadCount > 0 && (
@@ -156,17 +152,17 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                 <div className={`px-4 py-2 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                   <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Notifikasi</p>
                 </div>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-80 overflow-y-auto">
                   {notifications.map(notification => (
-                    <div
+                    <Link href={notification.action_url}
                       key={notification.id}
-                      className={`px-4 py-3 ${!notification.read ? (isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50') : ''} ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
+                      className={`block px-4 py-3 ${!notification.read ? (isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50') : ''} ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                     >
                       <div className="flex items-start">
                         <div className="ml-3">
-                          <p className={`flex gap-2 text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                            {`${notification.users.username} ${notification.message}`}
-                            <span className={`block rounded-full ${notification.type === "success" ? 'bg-green-200 text-green-600' : 'bg-gray-200 text-gray-600'}`}>{notification.type}</span>
+                          <p className={`flex gap-1 text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                            <h2 className="font-semibold">{notification.users.username}</h2>
+                            {notification.message}
                           </p>
                           <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{notification.time}</p>
                         </div>
@@ -176,13 +172,13 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                           </div>
                         )}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
                 <div className={`px-4 py-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <a href="#" className={`text-sm font-medium ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}>
+                  <Link href="/dashboard/notifications" className={`text-sm font-medium ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'}`}>
                     Lihat semua notifikasi
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -193,7 +189,7 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                 <HelpCircle size={20} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
               </button>
               {isHelpOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-60 sm:w-44 md:w-60 lg:w-80 bg-white rounded-xl shadow-lg z-50">
                   <div className="p-5">
                     {/* Header Section */}
                     <div className="flex items-start gap-3 mb-3">

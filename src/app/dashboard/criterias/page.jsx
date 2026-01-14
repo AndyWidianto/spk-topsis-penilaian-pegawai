@@ -184,7 +184,7 @@ export default function CriteriaTable() {
                         </span>
                       </td>
                       <td className={`px-6 py-4 whitespace-nowrap ${textSecondary}`}>
-                        {new Date(criteria.dateCreated).toLocaleDateString('en-US', {
+                        {new Date(criteria.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric'

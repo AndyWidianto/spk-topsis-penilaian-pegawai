@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { verifyAccessToken } from "./token.service";
+import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();
 export async function getNotifications(token, limit) {
@@ -10,16 +11,22 @@ export async function getNotifications(token, limit) {
             target_role: "all"
         };
     }
+    const totalUnread = await prisma.notifications.count({ 
+        where: {
+            read: false
+        }
+    });
     if (limit === "all") {
-        return prisma.notifications.findMany({
+        const notifications = await prisma.notifications.findMany({
             where,
             orderBy: { createdAt: "desc" },
             include: {
                 users: true
             }
         });
+        return { notifications, total_unread: totalUnread };
     }
-    return prisma.notifications.findMany({
+    const notifications = await prisma.notifications.findMany({
         where,
         take: Number(limit),
         orderBy: {
@@ -27,4 +34,27 @@ export async function getNotifications(token, limit) {
         },
         include: { users: true }
     });
+    return { notifications, total_unread: totalUnread };
+}
+
+export async function updateReadNotifications({ id }) {
+    if (!id) {
+        throw new AppError("Id not found", 404);
+    }
+    if (id === "all") {
+        return prisma.notifications.updateMany({
+            data: {
+                read: true
+            }, 
+            where: {
+                read: false
+            }
+        });
+    }
+    return prisma.notifications.update({
+        where: {
+            id
+        },
+        data: { read: true }
+    })
 }

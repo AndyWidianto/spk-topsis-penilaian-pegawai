@@ -46,7 +46,7 @@ export async function createCriteria(token, ip, { name, weight, type, descriptio
             message: "create criteria",
             read: false,
             type: "success",
-            action_url: `/dashboard/criteria?search=${criteria.code}`,
+            action_url: `/dashboard/criterias?search=${criteria.code}`,
             target_role: "admin"
         }
     });
