@@ -67,6 +67,7 @@ export async function Register(ip, { username, email, password }) {
         data: {
             username,
             password: hashPassword,
+            full_name: username,
             email
         }
     });
