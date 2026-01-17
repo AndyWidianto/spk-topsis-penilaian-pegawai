@@ -42,16 +42,16 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", { method: "POST", body: JSON.stringify(formData) });
-      if (!res.ok) {
-        throw new Error("Login failed");
-      }
       const resJson = await res.json();
+      if (!res.ok) {
+        setError(resJson.message || "Login failed");
+        throw new Error(resJson.message || "Login failed");
+      }
       console.log("Login successful:", resJson);
       localStorage.setItem("accessToken", resJson.accessToken);
       router.push("/dashboard");
     } catch (error) {
-      console.error("Login failed:", error);
-      setError("Email atau password salah!");
+      console.error("Login failed:", resJson);
     } finally {
       setLoading(false);
     }

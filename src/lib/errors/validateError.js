@@ -2,10 +2,14 @@ import { AppError } from "./AppError";
 
 export function ValidateError(err) {
     if (err instanceof AppError) {
-        return Response.json({
-            success: false,
-            message: err.message
-        }, { status: err.statusCode })
+        if (!err.details) {
+            return Response.json({
+                success: false,
+                message: err.message
+            }, { status: err.statusCode })
+        }
+        console.log(err);
+        return Response.json(err.details, { status: err.statusCode })
     }
 
     return Response.json(

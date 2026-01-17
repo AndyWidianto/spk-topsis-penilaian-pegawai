@@ -164,10 +164,12 @@ export default function RegisterPage() {
       setLoading(true);
       try {
         const res = await fetch("/api/auth/register", { method: "POST", body: JSON.stringify(formData), headers: { "Content-Type": "application/json" } });
+        const resJson = await res.json();
         if (!res.ok) {
+          setErrors(resJson);
           throw new Error("Registration failed");
         }
-        const resJson = await res.json();
+        alert("Registration successful!");
         localStorage.setItem("accessToken", resJson.accessToken);
         router.push("/dashboard");
       } catch (err) {

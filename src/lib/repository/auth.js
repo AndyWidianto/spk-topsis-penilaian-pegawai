@@ -9,7 +9,7 @@ const salt = 10;
 
 export async function Login(ip, { email, password }) {
     if (!email.trim()) {
-        throw new AppError("username atau email tidak boleh kosong", 404);
+        throw new AppError("username or email cannot be empty", 404);
     }
     const user = await prisma.users.findFirst({
         where: {
@@ -20,11 +20,11 @@ export async function Login(ip, { email, password }) {
         }
     });
     if (!user) {
-        throw new AppError("Email atau Username tidak tersedia", 404);
+        throw new AppError("Invalid email or password.", 404);
     }
     const isMatch = await bcrpyt.compare(password, user.password);
     if (!isMatch) {
-        throw new AppError("Password salah", 404);
+        throw new AppError("Invalid email or password.", 404);
     }
     delete user.password;
     delete user.refresh_token;
@@ -51,10 +51,16 @@ export async function Login(ip, { email, password }) {
 
 export async function Register(ip, { username, email, password }) {
     if (!username.trim() || !email.trim()) {
-        throw new AppError("Username atau Email tidak boleh kosong", 404);
+        throw new AppError("username or email cannot be empty", 404);
     }
     if (password.length < 8) {
-        throw new AppError("Password harus lebih dari 8 character", 404);
+        throw new AppError("Password must be more than 8 characters.", 404);
+    }
+    const findEmail = await prisma.users.findFirst({
+        where: { email }
+    });
+    if (findEmail) {
+        throw new AppError("Email is Already", 419, { email: "Email is Already" });
     }
     const hashPassword = await bcrpyt.hash(password, salt);
     const user = await prisma.users.create({
@@ -67,6 +73,7 @@ export async function Register(ip, { username, email, password }) {
     delete user.password;
     const refresh = refreshToken(user);
     const access = accessToken(user);
+    console.log(user);
     await prisma.users.update({
         where: {
             id: user.id
@@ -79,7 +86,7 @@ export async function Register(ip, { username, email, password }) {
             user_role: user.role, 
             action: "REGISTER",
             entity: "auth",
-            entity_id: id,
+            entity_id: user.id,
             ip_address: ip
         }
     })
