@@ -101,7 +101,7 @@ export default function CriteriaTable() {
               duration: 1,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className='fixed w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
+            className='fixed w-[calc(100%-0px)] md:w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
           >
             <UpdateCriteria data={criteria} id={criteriaId} cancel={() => handleCancel()} />
           </motion.div>

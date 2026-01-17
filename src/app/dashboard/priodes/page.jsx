@@ -26,7 +26,7 @@ export default function PriodesTable() {
   const inputBg = darkMode ? 'bg-gray-700' : 'bg-gray-50';
   const hoverBg = darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const priodes = useSelector((state) => state.priode.priodes);
   const dispatch = useDispatch();
   const roleValidation = user && user?.role === "super_admin" || user?.role === "admin";
@@ -83,7 +83,7 @@ export default function PriodesTable() {
               duration: 1,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className='fixed w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
+            className='fixed w-[calc(100%-0px)] md:w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
           >
             <FormUpdatePriode data={priode} cancel={() => handleCancel()} id={priodeId} />
           </motion.div>

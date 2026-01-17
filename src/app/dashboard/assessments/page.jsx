@@ -36,9 +36,10 @@ export default function AssessmentTable() {
   const inputBg = darkMode ? 'bg-gray-700' : 'bg-gray-50';
   const hoverBg = darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   async function getPriodeId(id) {
+    if (priode && priode.id === id) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/priodes/${id}`, { method: "GET" });
@@ -53,14 +54,15 @@ export default function AssessmentTable() {
       setLoading(false);
     }
   }
-  async function getPriodeLast() {
+  async function getPriodeNow() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/priodes/last`, { method: "GET" });
+      const date = new Date();
+      const res = await fetch(`/api/priodes?month=${date.getMonth() + 1}&year=${date.getFullYear()}`, { method: "GET" });
       if (res.ok) {
         const resJson = await res.json();
-        console.log(resJson);
-        dispatch(setPriode(resJson));
+        console.log(resJson[0]);
+        dispatch(setPriode(resJson[0]));
       }
     } catch (err) {
       console.error(err);
@@ -73,7 +75,7 @@ export default function AssessmentTable() {
     if (priode && priode.id) {
       return await getPriodeId(priode.id);
     }
-    await getPriodeLast();
+    await getPriodeNow();
   }
   function handleUpdate(id, data) {
     setAssessment({ ...data, priode_id: priode?.id });
@@ -162,7 +164,7 @@ export default function AssessmentTable() {
               duration: 1,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className='fixed w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
+            className='fixed w-[calc(100%-0px)] md:w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
           >
             <UpdateAssessment data={assessment} id={assessmentId} cancel={() => handleCancel()} />
           </motion.div>
@@ -176,7 +178,7 @@ export default function AssessmentTable() {
               duration: 1,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className='fixed w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
+            className='fixed w-[calc(100%-0px)] md:w-[calc(100%-270px)] top-0 bottom-0 right-0 z-20 overflow-scroll scroll-hidden min-h-screen bg-transparent'
           >
             <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0a0a2f]">
               <div

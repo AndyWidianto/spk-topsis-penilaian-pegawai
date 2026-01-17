@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { verifyAccessToken } from "./token.service";
+import { AppError } from "../errors/AppError";
 
 const prisma = new PrismaClient();
 
@@ -12,9 +13,9 @@ export async function createPriode(token, ip, { month, year, status }) {
         data: { month, year, status }
     });
     await prisma.auditLogs.create({
-        data: { 
-            user_id: user.id, 
-            user_role: user.role, 
+        data: {
+            user_id: user.id,
+            user_role: user.role,
             action: "CREATE",
             entity: "priodes",
             entity_id: priode.id,
@@ -24,8 +25,30 @@ export async function createPriode(token, ip, { month, year, status }) {
     return priode;
 }
 
-export async function getPriodes() {
-    return prisma.priodes.findMany();
+export async function getPriodes(month, year) {
+    let where = {};
+    let include = {};
+    if (month) {
+        where["month"] = Number(month);
+    }
+    if (year) {
+        where["year"] = Number(year);
+    }
+    if (year && month) {
+        include["assessments"] = {
+            include: {
+                employees: true,
+                assessment_details: true
+            },
+            orderBy: {
+                ranking: "asc"
+            }
+        };
+    }
+    return prisma.priodes.findMany({
+        where,
+        include
+    });
 }
 
 export async function deletePriode(token, ip, id) {
@@ -39,9 +62,9 @@ export async function deletePriode(token, ip, id) {
         }
     })
     await prisma.auditLogs.create({
-        data: { 
-            user_id: user.id, 
-            user_role: user.role, 
+        data: {
+            user_id: user.id,
+            user_role: user.role,
             action: "DELETE",
             entity: "priodes",
             entity_id: id,
@@ -61,15 +84,15 @@ export async function updatePriode(token, ip, id, { month, year, status }) {
             id
         },
         data: {
-            month, 
+            month,
             year,
             status
         }
     });
     await prisma.auditLogs.create({
-        data: { 
-            user_id: user.id, 
-            user_role: user.role, 
+        data: {
+            user_id: user.id,
+            user_role: user.role,
             action: "UPDATE",
             entity: "priodes",
             entity_id: id,
@@ -83,7 +106,7 @@ export async function getPriode(id) {
     return prisma.priodes.findUnique({
         where: {
             id
-        }, 
+        },
         include: {
             assessments: {
                 include: {

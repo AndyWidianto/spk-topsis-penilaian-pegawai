@@ -22,7 +22,7 @@ export default function FormUpdatePriode({ data, cancel, id }) {
     const refMonth = useRef(null);
     const refYear = useRef(null);
 
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const dispatch = useDispatch();
 
     const date = new Date();

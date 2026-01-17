@@ -33,56 +33,7 @@ export default function UpdateAssessment({ data, id, cancel }) {
     );
     const dispatch = useDispatch();
     const criterias = useSelector((state) => state.criteria.criterias);
-    const months = [
-        {
-            value: 1,
-            label: "January"
-        },
-        {
-            value: 2,
-            label: "February"
-        },
-        {
-            value: 3,
-            label: "March",
-        },
-        {
-            value: 4,
-            label: "April"
-        },
-        {
-            value: 5,
-            label: "May"
-        },
-        {
-            value: 6,
-            label: "June"
-        },
-        {
-            value: 7,
-            label: "July"
-        },
-        {
-            value: 8,
-            label: "August"
-        },
-        {
-            value: 9,
-            label: "September"
-        },
-        {
-            value: 10,
-            label: "October"
-        },
-        {
-            value: 11,
-            label: "November"
-        },
-        {
-            value: 12,
-            label: "December"
-        }
-    ];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const selectedEmployee = employees.find(emp => emp.id === formData.employee_id);
     const selectedPriode = priodes.find(p => p.id === formData.priode_id);
 
@@ -346,13 +297,13 @@ export default function UpdateAssessment({ data, id, cancel }) {
                             <div className="relative" ref={refPriode}>
                                 <button type="button" onClick={() => setIsDropdownOpenPriode(!isDropdownOpenPriode)} className='flex items-center gap-2 w-full p-3 rounded-md border-2 border-slate-200'>
                                     <Calendar size={20} />
-                                    {formData.priode_id ? `${months.find(m => m.value === selectedPriode?.month)?.label}-${selectedPriode?.year}` : 'Select Priode'}
+                                    {formData.priode_id ? months[formData.month - 1] : 'Select Priode'}
                                 </button>
                                 {isDropdownOpenPriode && <div className="absolute w-full p-1 top-[60px] overflow-scroll scroll-hidden rounded-md bg-white border-2 border-slate-200 max-h-[150px]">
                                     <ul>
                                         {priodes.map(priode => (
                                             <li key={priode.id}>
-                                                <button type="button" onClick={() => handleSelect("priode_id", priode.id)} className='text-start p-2 w-full'>{months.find(m => m.value === priode.month).label}-{priode.year}</button>
+                                                <button type="button" onClick={() => handleSelect("priode_id", priode.id)} className='text-start p-2 w-full'>{months[priode.month - 1]} {priode.year}</button>
                                             </li>
                                         ))}
                                     </ul>

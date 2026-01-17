@@ -20,9 +20,12 @@ export async function POST(req) {
     }
 }
 
-export async function GET() {
+export async function GET(req) {
+    const { searchParams } = new URL(req.url);
+    const month = searchParams.get("month");
+    const year = searchParams.get("year");
     try {
-        const priodes = await getPriodes();
+        const priodes = await getPriodes(month, year);
         return Response.json(priodes);
     } catch (err) {
         console.error(err);

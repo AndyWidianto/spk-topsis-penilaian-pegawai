@@ -36,7 +36,7 @@ export default function AssessmentForm() {
     emp.nip.includes(searchQuery)
   );
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const selectedEmployee = employees.find(emp => emp.id === formData.employee_id);
   const selectedPriode = priodes.find(p => p.id === formData.priode_id);

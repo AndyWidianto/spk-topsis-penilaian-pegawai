@@ -160,10 +160,10 @@ export default function Header({ sidebarActive, actionSidebar, handleLogout, use
                     >
                       <div className="flex items-start">
                         <div className="ml-3">
-                          <p className={`flex gap-1 text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                          <div className={`flex gap-1 text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                             <h2 className="font-semibold">{notification.users.username}</h2>
                             {notification.message}
-                          </p>
+                          </div>
                           <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{notification.time}</p>
                         </div>
                         {!notification.read && (
